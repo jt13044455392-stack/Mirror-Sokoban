@@ -1,0 +1,1218 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>多样性试验组 · 六种解题思路</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:#0f172a;background:#f8fafc}*{box-sizing:border-box}body{margin:0;padding:20px 12px}main{max-width:980px;margin:auto}header{display:flex;justify-content:space-between;gap:16px;align-items:center}h1{font-size:22px}h2{font-size:18px;margin:0}p,summary{line-height:1.7}a{color:#0369a1}nav,.controls{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}button{font:inherit;font-size:14px;padding:9px 12px;border-radius:8px;border:1px solid #cbd5e1;background:white;color:#334155;cursor:pointer}button[aria-pressed=true]{background:#0f172a;color:white}.panel{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16px}.boards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin:18px 0}.board{border-radius:10px;padding:10px;background:#fffbf5;border:1px solid #fed7aa;max-width:100%;overflow:auto}.board:nth-child(2){background:#f0f9ff;border-color:#bae6fd}.board h3{font-size:13px;margin:0 0 8px;color:#475569}.grid{display:grid;gap:2px;background:#cbd5e1;padding:2px;border-radius:4px}.cell{width:var(--cell);height:var(--cell);background:white;display:flex;align-items:center;justify-content:center;position:relative;border-radius:2px;font-size:13px}.wall{background:#1e293b}.goal:before{content:'●';color:#10b981;position:absolute}.gate-r{background:#fee2e2;border:2px dashed #ef4444}.gate-b{background:#dbeafe;border:2px dashed #3b82f6}.gate-p{background:#f3e8ff;border:2px dashed #a855f7}.prism{background:#fef9c3}.conduit{outline:2px dashed #8b5cf6;outline-offset:-3px}.pit{background:#334155;color:white}.pillar{background:#64748b;color:white}.planned{background:#e2e8f0;color:#475569}.entity{width:72%;height:72%;border-radius:5px;border:2px solid #92400e;background:#d97706;z-index:1;display:flex;align-items:center;justify-content:center;color:white;font-size:11px}.red{background:#ef4444;border-color:#b91c1c}.blue{background:#3b82f6;border-color:#1d4ed8}.purple{background:#a855f7;border-color:#7e22ce}.player{border-radius:50%;background:white;border:3px solid #0ea5e9;color:#0369a1}.goal .entity{box-shadow:0 0 0 2px #10b981}.legend{font-size:13px;color:#475569}.dpad{display:grid;grid-template-columns:repeat(3,48px);gap:5px;justify-content:center}.dpad button{padding:10px}.stats{color:#475569;font-size:14px}details{margin-top:14px;border-top:1px solid #e2e8f0;padding-top:10px}.success{color:#15803d;font-weight:700}button:focus-visible,a:focus-visible{outline:3px solid #0ea5e9;outline-offset:2px}@media(max-width:480px){body{padding:8px}.panel{padding:10px}.board{padding:6px}header{align-items:flex-start}h1{font-size:19px}}
+</style></head><body><main>
+<header><div><h1>多样性试验组 · 6关</h1><p class="stats">六种不同的安排，参考解步数不代表难度。</p></div><a href="./">返回章节</a></header>
+<nav id="levels" aria-label="试验组选关"></nav>
+<section class="panel"><h2 id="title"></h2><p id="rules" class="legend"></p>
+<div class="stats"><span id="steps"></span> · <span id="reference"></span> <span id="status" aria-live="polite"></span></div>
+<div id="boards" class="boards"></div>
+<div class="controls"><button id="undo">撤销 Z</button><button id="reset">重开 R</button><button id="demo" style="display:none">参考解（从头演示）</button><button id="pause">停止演示</button><button id="next">下一关</button></div>
+<div class="dpad" aria-label="方向控制"><span></span><button data-dir="U" aria-label="向上">↑</button><span></span><button data-dir="L" aria-label="向左">←</button><button data-dir="D" aria-label="向下">↓</button><button data-dir="R" aria-label="向右">→</button></div>
+<p class="legend">方向键 / WASD 移动；手动移动、撤销、重开和切关会停止演示。绿点是目标，蓝边圆形是人物。</p>
+<details><summary>设计提示与本关的不同之处</summary><p id="design"></p></details>
+</section></main>
+<script type="module">
+const ColorEngine=(()=>{
+/**
+ * CG-COLOR-SYNTH-1: Pure rule engine for "Polarized Filters & Color Synthesis"
+ * (偏振光栅与原色加色合成调车场).
+ *
+ * Rules:
+ * 1. Two boards receive synchronized direction input (default: identity).
+ * 2. Tiles:
+ *    - '#' Wall (blocks all)
+ *    - ' ' Floor
+ *    - '.' Universal Goal
+ *    - 'r' Red Polarization Gate (allows player and Red box; blocks Blue, Purple & Neutral)
+ *    - 'b' Blue Polarization Gate (allows player and Blue box; blocks Red, Purple & Neutral)
+ *    - 'p' Purple Polarization Gate (allows player and Purple box; blocks Red, Blue & Neutral)
+ * 3. Entities:
+ *    - '@' Player on floor, '+' Player on goal
+ *    - '$' Neutral box on floor, '*' Neutral box on goal
+ *    - 'R' Red box on floor, '1' Red box on goal
+ *    - 'B' Blue box on floor, '2' Blue box on goal
+ *    - 'P' Purple box on floor, '3' Purple box on goal
+ * 4. Movement:
+ *    - Player is neutral white light and can pass freely through all gates ('r', 'b', 'p') and floor.
+ *    - Normal push: pushing a box into an empty floor/goal or matching gate moves the box by 1 step.
+ *    - Non-matching gate push: attempting to push a box into a mismatching gate is blocked like a wall.
+ * 5. Collision Synthesis (对撞加色合成 RED ⊗ BLUE => PURPLE):
+ *    - When player pushes a box of color K1 into a cell containing a box of color K2:
+ *      If {K1, K2} === {'red', 'blue'} and target cell is not a Red/Blue gate:
+ *        Synthesis occurs!
+ *        The two boxes merge into a single 'purple' box residing at the target cell.
+ *        The pushing box is consumed (net box count -1).
+ *        The player advances into the vacated space.
+ *      Otherwise (e.g. Red into Red, Blue into Blue, or into Purple): blocked like normal Sokoban.
+ * 6. Changes commit discretely at end of step. Undo fully restores box identities and colors.
+ * 7. Solved: All goals covered by valid boxes.
+ */
+
+const DIRS = ['U', 'D', 'L', 'R'];
+const MAPS = { identity: [0, 1, 2, 3], vertical: [0, 1, 3, 2], slash: [3, 2, 0, 1] };
+const VECTORS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+const COLOR_NEUTRAL = 0;
+const COLOR_RED = 1;
+const COLOR_BLUE = 2;
+const COLOR_PURPLE = 3;
+
+const COLOR_NAMES = {
+  [COLOR_NEUTRAL]: 'neutral',
+  [COLOR_RED]: 'red',
+  [COLOR_BLUE]: 'blue',
+  [COLOR_PURPLE]: 'purple'
+};
+
+const COLOR_CHARS = {
+  neutral: '$',
+  red: 'R',
+  blue: 'B',
+  purple: 'P'
+};
+
+const TILE_PRISM = '^';
+const TILE_PRISM_UNICODE = '▲';
+const TILE_CONDUIT = 'c';
+const TILE_CONDUIT_UPPER = 'C';
+
+function gateAllowsColor(gateType, boxColor) {
+  if (!gateType) return true; // normal floor
+  if (gateType === 'r') return boxColor === COLOR_RED;
+  if (gateType === 'b') return boxColor === COLOR_BLUE;
+  if (gateType === 'p') return boxColor === COLOR_PURPLE;
+  return false;
+}
+
+function compile(level) {
+  if (level.ruleVersion !== 'CG-COLOR-SYNTH-1') {
+    throw Error('Invalid CG-COLOR-SYNTH-1 configuration');
+  }
+
+  const rawBoards = level.boards || (level.board0 && level.board1 ? [level.board0, level.board1] : null);
+  if (!Array.isArray(rawBoards) || rawBoards.length !== 2 || !Object.hasOwn(MAPS, level.mapping || 'identity')) {
+    throw Error('Invalid CG-COLOR-SYNTH-1 configuration');
+  }
+
+  const mappingKey = level.mapping || 'identity';
+  let nextBoxId = 1;
+
+  const boards = rawBoards.map((rawRows, side) => {
+    if (!Array.isArray(rawRows) || !rawRows.length || typeof rawRows[0] !== 'string') {
+      throw Error(`Invalid row array for board ${side}`);
+    }
+    const width = Math.max(...rawRows.map(r => r.length));
+    const rows = rawRows.map(r => r.padEnd(width, ' '));
+    const height = rows.length;
+    const floor = [];
+    const goals = [];
+    const gates = {}; // pos -> 'r' | 'b' | 'p'
+    const prisms = new Set();
+    const conduitPositions = [];
+    const initialBoxes = [];
+    let player;
+
+    // Detect exterior void cells by flood-filling from grid boundaries containing ' '
+    const exteriorVoid = new Set();
+    const voidQueue = [];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+          if (rows[y][x] === ' ') {
+            const p = y * width + x;
+            exteriorVoid.add(p);
+            voidQueue.push([x, y]);
+          }
+        }
+      }
+    }
+    while (voidQueue.length > 0) {
+      const [vx, vy] = voidQueue.shift();
+      for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+        const nx = vx + dx;
+        const ny = vy + dy;
+        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+          if (rows[ny][nx] === ' ') {
+            const np = ny * width + nx;
+            if (!exteriorVoid.has(np)) {
+              exteriorVoid.add(np);
+              voidQueue.push([nx, ny]);
+            }
+          }
+        }
+      }
+    }
+
+    rows.forEach((row, y) => [...row].forEach((ch, x) => {
+      const validChars = '# .@+$*rbpRBPR123^▲cC';
+      if (!validChars.includes(ch)) {
+        throw Error(`Invalid tile '${ch}' at board ${side} (${x},${y})`);
+      }
+      if (ch === '#') return;
+      const pos = y * width + x;
+      // Exterior spaces are empty void and must NOT be added to board.floor
+      if (ch === ' ' && exteriorVoid.has(pos)) return;
+      floor.push(pos);
+
+      // Prisms
+      if (ch === '^' || ch === '▲') {
+        prisms.add(pos);
+      }
+
+      // Conduits
+      if (ch === 'c' || ch === 'C') {
+        conduitPositions.push(pos);
+      }
+
+      // Gates
+      if ('rbp'.includes(ch)) {
+        gates[pos] = ch;
+      }
+
+      // Goals
+      if ('.+*123'.includes(ch)) {
+        goals.push(pos);
+      }
+
+      // Player
+      if ('@+'.includes(ch)) {
+        if (player !== undefined) throw Error(`Multiple players on board ${side}`);
+        player = pos;
+      }
+
+      // Boxes
+      if (ch === '$' || ch === '*') {
+        initialBoxes.push({ id: nextBoxId++, pos, color: COLOR_NEUTRAL });
+      } else if (ch === 'R' || ch === '1') {
+        initialBoxes.push({ id: nextBoxId++, pos, color: COLOR_RED });
+      } else if (ch === 'B' || ch === '2') {
+        initialBoxes.push({ id: nextBoxId++, pos, color: COLOR_BLUE });
+      } else if (ch === 'P' || ch === '3') {
+        initialBoxes.push({ id: nextBoxId++, pos, color: COLOR_PURPLE });
+      }
+    }));
+
+    if (player === undefined) {
+      if (side === 0) throw Error(`Board ${side} requires a player`);
+      player = -1;
+    }
+
+    const floorSet = new Set(floor);
+    const neighbors = {};
+    for (const pos of floor) {
+      neighbors[pos] = VECTORS.map(([dx, dy]) => {
+        const x = (pos % width) + dx, y = Math.floor(pos / width) + dy;
+        const q = y * width + x;
+        return x >= 0 && x < width && y >= 0 && y < height && floorSet.has(q) ? q : -1;
+      });
+    }
+
+    initialBoxes.sort((a, b) => a.pos - b.pos);
+
+    const conduitsMap = new Map();
+    conduitPositions.forEach((p, idx) => { conduitsMap[idx] = p; });
+    Object.defineProperty(conduitsMap, 'length', { get() { return this.size; } });
+
+    return {
+      width,
+      height,
+      floor,
+      floorSet,
+      goals,
+      gates,
+      prisms,
+      conduits: conduitsMap,
+      conduitPositions,
+      neighbors,
+      initial: {
+        player,
+        boxes: initialBoxes
+      }
+    };
+  });
+
+  // Build conduit pairings
+  const conduitDefs = [];
+  if (Array.isArray(level.conduits) && level.conduits.length > 0) {
+    for (const c of level.conduits) {
+      const sideA = c.a?.side ?? 0;
+      const sideB = c.b?.side ?? 1;
+      const bA = boards[sideA];
+      const bB = boards[sideB];
+      const posA = c.a.pos !== undefined ? c.a.pos : (c.a.y * bA.width + c.a.x);
+      const posB = c.b.pos !== undefined ? c.b.pos : (c.b.y * bB.width + c.b.x);
+      const outputSide = c.outputSide ?? 0;
+      conduitDefs.push({
+        a: { side: sideA, pos: posA, x: posA % bA.width, y: Math.floor(posA / bA.width) },
+        b: { side: sideB, pos: posB, x: posB % bB.width, y: Math.floor(posB / bB.width) },
+        outputSide
+      });
+    }
+  } else if (boards[0].conduitPositions.length === 1 && boards[1].conduitPositions.length === 1) {
+    const posA = boards[0].conduitPositions[0];
+    const posB = boards[1].conduitPositions[0];
+    conduitDefs.push({
+      a: { side: 0, pos: posA, x: posA % boards[0].width, y: Math.floor(posA / boards[0].width) },
+      b: { side: 1, pos: posB, x: posB % boards[1].width, y: Math.floor(posB / boards[1].width) },
+      outputSide: 0
+    });
+  }
+
+  for (const c of conduitDefs) {
+    const linkA = { side: c.a.side, pos: c.a.pos, otherSide: c.b.side, otherPos: c.b.pos, outputSide: c.outputSide };
+    const linkB = { side: c.b.side, pos: c.b.pos, otherSide: c.a.side, otherPos: c.a.pos, outputSide: c.outputSide };
+    boards[c.a.side].conduits.set(c.a.pos, linkA);
+    boards[c.a.side].conduits[c.a.pos] = linkA;
+    boards[c.b.side].conduits.set(c.b.pos, linkB);
+    boards[c.b.side].conduits[c.b.pos] = linkB;
+  }
+
+  const totalGoals = boards[0].goals.length + boards[1].goals.length;
+  const initialBoxCount = boards[0].initial.boxes.length + boards[1].initial.boxes.length;
+  const totalPrisms = boards[0].prisms.size + boards[1].prisms.size;
+  const totalConduits = boards[0].conduitPositions.length + boards[1].conduitPositions.length;
+
+  if (totalPrisms === 0 && totalConduits === 0 && initialBoxCount < totalGoals) {
+    throw Error(`Initial boxes (${initialBoxCount}) cannot be less than total goals (${totalGoals})`);
+  }
+
+  return {
+    ruleVersion: 'CG-COLOR-SYNTH-1',
+    title: level.title || '',
+    width: Math.max(boards[0].width, boards[1].width),
+    height: Math.max(boards[0].height, boards[1].height),
+    mapping: MAPS[mappingKey],
+    mappingKey,
+    boards,
+    conduits: conduitDefs,
+    conduitMap: [boards[0].conduits, boards[1].conduits],
+    totalGoals,
+    initial: {
+      worlds: [
+        { player: boards[0].initial.player, boxes: boards[0].initial.boxes.map(b => ({ ...b })) },
+        { player: boards[1].initial.player, boxes: boards[1].initial.boxes.map(b => ({ ...b })) }
+      ]
+    }
+  };
+}
+
+function key(state) {
+  return state.worlds.map(w => {
+    const bStr = w.boxes
+      .map(b => `${b.pos}:${b.color}`)
+      .sort()
+      .join(',');
+    return `${w.player}|${bStr}`;
+  }).join('||');
+}
+
+function localIntent(board, world, dir, options = {}, side = 0) {
+  const p = world.player;
+  const dest = board.neighbors[p]?.[dir] ?? -1;
+  if (dest === -1) {
+    return { type: 'blocked', reason: 'wall' };
+  }
+
+  const boxAtDest = world.boxes.find(b => b.pos === dest);
+  if (!boxAtDest) {
+    return {
+      type: 'walk',
+      playerNext: dest,
+      boxesNext: world.boxes.map(b => ({ ...b })),
+      pushed: false,
+      synthesis: null
+    };
+  }
+
+  const beyond = board.neighbors[dest]?.[dir] ?? -1;
+  if (beyond === -1) {
+    return { type: 'blocked', reason: 'box_into_wall' };
+  }
+
+  // Scheme C: Prism Dispersion
+  if (board.prisms && board.prisms.has(beyond) && boxAtDest.color === COLOR_PURPLE) {
+    if (options.noPrism) {
+      return { type: 'blocked', reason: 'noPrism' };
+    }
+
+    if (world.boxes.some(b => b.pos === beyond)) {
+      return { type: 'blocked', reason: 'prism_occupied' };
+    }
+
+    let lat1, lat2;
+    if (dir === 0 || dir === 1) {
+      lat1 = board.neighbors[beyond]?.[2] ?? -1; // West
+      lat2 = board.neighbors[beyond]?.[3] ?? -1; // East
+    } else {
+      lat1 = board.neighbors[beyond]?.[0] ?? -1; // North
+      lat2 = board.neighbors[beyond]?.[1] ?? -1; // South
+    }
+
+    if (lat1 === -1 || lat2 === -1) {
+      return { type: 'blocked', reason: 'prism_flank_wall' };
+    }
+    if (world.boxes.some(b => b.pos === lat1 || b.pos === lat2)) {
+      return { type: 'blocked', reason: 'prism_flank_box' };
+    }
+    if (board.gates[lat1] && !gateAllowsColor(board.gates[lat1], COLOR_RED)) {
+      return { type: 'blocked', reason: 'prism_flank_gate_red' };
+    }
+    if (board.gates[lat2] && !gateAllowsColor(board.gates[lat2], COLOR_BLUE)) {
+      return { type: 'blocked', reason: 'prism_flank_gate_blue' };
+    }
+
+    return {
+      type: 'prism_dispersion',
+      playerNext: dest,
+      pushed: true,
+      box: boxAtDest,
+      beyond,
+      latRed: lat1,
+      latBlue: lat2,
+      synthesis: null
+    };
+  }
+
+  // Scheme B: Push into Conduit
+  const cLink = board.conduits?.get ? board.conduits.get(beyond) : board.conduits?.[beyond];
+  if (cLink) {
+    if (options.noConduit) {
+      return { type: 'blocked', reason: 'noConduit' };
+    }
+
+    return {
+      type: 'conduit_push',
+      playerNext: dest,
+      pushed: true,
+      box: boxAtDest,
+      fromSide: side,
+      fromPos: beyond,
+      toSide: cLink.otherSide,
+      toPos: cLink.otherPos,
+      outputSide: cLink.outputSide,
+      synthesis: null
+    };
+  }
+
+  // Normal push or Same-world synthesis
+  const gateBeyond = board.gates[beyond];
+  const boxAtBeyond = world.boxes.find(b => b.pos === beyond);
+
+  if (boxAtBeyond) {
+    if (options.noSynthesis) {
+      return { type: 'blocked', reason: 'noSynthesis' };
+    }
+
+    const c1 = boxAtDest.color;
+    const c2 = boxAtBeyond.color;
+    const isRedBlue = (c1 === COLOR_RED && c2 === COLOR_BLUE) || (c1 === COLOR_BLUE && c2 === COLOR_RED);
+
+    if (isRedBlue) {
+      if (gateBeyond === 'r' || gateBeyond === 'b') {
+        return { type: 'blocked', reason: 'gate_blocks_purple' };
+      }
+
+      const newBoxes = world.boxes
+        .filter(b => b.id !== boxAtDest.id)
+        .map(b => {
+          if (b.id === boxAtBeyond.id) {
+            return { ...b, color: COLOR_PURPLE };
+          }
+          return { ...b };
+        });
+
+      return {
+        type: 'same_world_synthesis',
+        playerNext: dest,
+        boxesNext: newBoxes,
+        pushed: true,
+        box: boxAtDest,
+        boxBeyond: boxAtBeyond,
+        beyond,
+        synthesis: {
+          type: 'synthesis',
+          boardIndex: side,
+          pos: beyond,
+          consumedId: boxAtDest.id,
+          targetId: boxAtBeyond.id,
+          resultingColor: COLOR_PURPLE,
+          color: COLOR_PURPLE
+        }
+      };
+    } else {
+      return { type: 'blocked', reason: 'same_color_collision' };
+    }
+  }
+
+  if (!gateAllowsColor(gateBeyond, boxAtDest.color)) {
+    return { type: 'blocked', reason: 'gate_blocks_color' };
+  }
+
+  const newBoxes = world.boxes.map(b => {
+    if (b.id === boxAtDest.id) {
+      return { ...b, pos: beyond };
+    }
+    return { ...b };
+  });
+
+  return {
+    type: 'normal_push',
+    playerNext: dest,
+    boxesNext: newBoxes,
+    pushed: true,
+    box: boxAtDest,
+    beyond,
+    synthesis: null
+  };
+}
+
+function step(config, state, inputChar, options = {}) {
+  const d = DIRS.indexOf(inputChar);
+  if (d === -1) throw Error(`Unknown direction '${inputChar}'`);
+
+  const d0 = d;
+  const d1 = config.mapping[d];
+
+  const plan0 = localIntent(config.boards[0], state.worlds[0], d0, options, 0);
+  const plan1 = localIntent(config.boards[1], state.worlds[1], d1, options, 1);
+
+  let accepted0 = plan0.type !== 'blocked';
+  let accepted1 = plan1.type !== 'blocked';
+
+  let pushed0 = Boolean(plan0.pushed);
+  let pushed1 = Boolean(plan1.pushed);
+
+  let synth0 = plan0.synthesis || null;
+  let synth1 = plan1.synthesis || null;
+
+  let disp0 = null;
+  let disp1 = null;
+
+  const transits = [];
+
+  let maxBoxId = 0;
+  for (const w of state.worlds) {
+    for (const b of w.boxes) {
+      if (b.id > maxBoxId) maxBoxId = b.id;
+    }
+  }
+
+  const nextWorlds = [
+    { player: state.worlds[0].player, boxes: state.worlds[0].boxes.map(b => ({ ...b })) },
+    { player: state.worlds[1].player, boxes: state.worlds[1].boxes.map(b => ({ ...b })) }
+  ];
+
+  const cp0 = plan0.type === 'conduit_push' ? plan0 : null;
+  const cp1 = plan1.type === 'conduit_push' ? plan1 : null;
+
+  if (cp0 && cp1 && cp0.toSide === 1 && cp0.toPos === cp1.fromPos && cp1.toSide === 0 && cp1.toPos === cp0.fromPos) {
+    // Case B.1: Synchronized head-on conduit collision
+    const isRedBlue = (cp0.box.color === COLOR_RED && cp1.box.color === COLOR_BLUE) ||
+                      (cp0.box.color === COLOR_BLUE && cp1.box.color === COLOR_RED);
+    if (isRedBlue && !options.noSynthesis) {
+      const outSide = cp0.outputSide ?? 0;
+      const outPos = outSide === 0 ? cp0.fromPos : cp1.fromPos;
+      const gateOut = config.boards[outSide].gates[outPos];
+
+      if (gateAllowsColor(gateOut, COLOR_PURPLE)) {
+        accepted0 = true;
+        accepted1 = true;
+        pushed0 = true;
+        pushed1 = true;
+
+        const consumedSide = 1 - outSide;
+        const synthEvent = {
+          type: 'conduit_collision',
+          fromSide: consumedSide,
+          toSide: outSide,
+          fromPos: consumedSide === 0 ? cp0.fromPos : cp1.fromPos,
+          toPos: outPos,
+          resultingColor: COLOR_PURPLE,
+          color: COLOR_PURPLE
+        };
+        synth0 = synthEvent;
+        synth1 = synthEvent;
+
+        nextWorlds[0].player = cp0.playerNext;
+        nextWorlds[1].player = cp1.playerNext;
+
+        nextWorlds[outSide].boxes = state.worlds[outSide].boxes.map(b => {
+          if (b.id === (outSide === 0 ? cp0.box.id : cp1.box.id)) {
+            return { ...b, pos: outPos, color: COLOR_PURPLE };
+          }
+          return { ...b };
+        });
+
+        nextWorlds[consumedSide].boxes = state.worlds[consumedSide].boxes
+          .filter(b => b.id !== (consumedSide === 0 ? cp0.box.id : cp1.box.id))
+          .map(b => ({ ...b }));
+      } else {
+        accepted0 = false;
+        accepted1 = false;
+        pushed0 = false;
+        pushed1 = false;
+      }
+    } else {
+      accepted0 = false;
+      accepted1 = false;
+      pushed0 = false;
+      pushed1 = false;
+    }
+  } else {
+    // Unilateral conduit push check
+    const conduitPushes = [
+      { side: 0, cp: cp0, otherPlan: plan1 },
+      { side: 1, cp: cp1, otherPlan: plan0 }
+    ];
+
+    for (const { side, cp, otherPlan } of conduitPushes) {
+      if (!cp) continue;
+      const otherSide = cp.toSide;
+      const targetPos = cp.toPos;
+      const otherWorld = state.worlds[otherSide];
+
+      // Destination must be passable floor (not an impassable wall)
+      if (!config.boards[otherSide].floorSet?.has(targetPos)) {
+        if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+        continue;
+      }
+
+      // Safety clamping
+      if (otherWorld.player === targetPos) {
+        if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+        continue;
+      }
+      if (otherPlan.type !== 'blocked' && otherPlan.playerNext === targetPos) {
+        if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+        continue;
+      }
+      if (otherPlan.type !== 'blocked' && (otherPlan.beyond === targetPos || otherPlan.fromPos === targetPos)) {
+        if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+        continue;
+      }
+      if (otherPlan.type === 'prism_dispersion' && (otherPlan.latRed === targetPos || otherPlan.latBlue === targetPos)) {
+        if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+        continue;
+      }
+
+      const residentBox = otherWorld.boxes.find(b => b.pos === targetPos);
+      if (residentBox) {
+        const residentIsPushed = otherPlan.type !== 'blocked' && otherPlan.pushed && otherPlan.box?.id === residentBox.id;
+        if (residentIsPushed) {
+          if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+          continue;
+        }
+
+        // Case B.2: Stationary Transit Collision
+        const isRedBlue = (cp.box.color === COLOR_RED && residentBox.color === COLOR_BLUE) ||
+                          (cp.box.color === COLOR_BLUE && residentBox.color === COLOR_RED);
+        const gateTarget = config.boards[otherSide].gates[targetPos];
+        const allowsPurple = gateAllowsColor(gateTarget, COLOR_PURPLE);
+
+        if (isRedBlue && !options.noSynthesis && allowsPurple) {
+          if (side === 0) { accepted0 = true; pushed0 = true; } else { accepted1 = true; pushed1 = true; }
+          const synthEvent = {
+            type: 'conduit_collision',
+            fromSide: side,
+            toSide: otherSide,
+            fromPos: cp.fromPos,
+            toPos: targetPos,
+            resultingColor: COLOR_PURPLE,
+            color: COLOR_PURPLE
+          };
+          synth0 = synthEvent;
+          synth1 = synthEvent;
+
+          nextWorlds[side].player = cp.playerNext;
+          nextWorlds[side].boxes = state.worlds[side].boxes
+            .filter(b => b.id !== cp.box.id)
+            .map(b => ({ ...b }));
+
+          cp.transmutedTarget = residentBox.id;
+        } else {
+          if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+        }
+      } else {
+        // Case B.3: Non-Colliding Transit ("Mirror Pass")
+        const gateTarget = config.boards[otherSide].gates[targetPos];
+        const gateAllows = gateAllowsColor(gateTarget, cp.box.color);
+
+        if (gateAllows && !options.noConduit) {
+          if (side === 0) { accepted0 = true; pushed0 = true; } else { accepted1 = true; pushed1 = true; }
+          transits.push({
+            type: 'conduit_transit',
+            fromSide: side,
+            toSide: otherSide,
+            fromPos: cp.fromPos,
+            toPos: targetPos,
+            color: cp.box.color
+          });
+
+          nextWorlds[side].player = cp.playerNext;
+          nextWorlds[side].boxes = state.worlds[side].boxes
+            .filter(b => b.id !== cp.box.id)
+            .map(b => ({ ...b }));
+
+          cp.transferredBox = { ...cp.box, pos: targetPos };
+        } else {
+          if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+        }
+      }
+    }
+
+    // Resolve non-conduit plans
+    for (let side = 0; side < 2; side++) {
+      const plan = side === 0 ? plan0 : plan1;
+      const accepted = side === 0 ? accepted0 : accepted1;
+      if (!accepted) {
+        nextWorlds[side].player = state.worlds[side].player;
+        nextWorlds[side].boxes = state.worlds[side].boxes.map(b => ({ ...b }));
+        continue;
+      }
+
+      if (plan.type === 'walk') {
+        nextWorlds[side].player = plan.playerNext;
+        nextWorlds[side].boxes = state.worlds[side].boxes.map(b => ({ ...b }));
+      } else if (plan.type === 'normal_push' || plan.type === 'same_world_synthesis') {
+        nextWorlds[side].player = plan.playerNext;
+        nextWorlds[side].boxes = plan.boxesNext.map(b => ({ ...b }));
+      } else if (plan.type === 'prism_dispersion') {
+        nextWorlds[side].player = plan.playerNext;
+        const latRed = plan.latRed;
+        const latBlue = plan.latBlue;
+        const redBox = { id: ++maxBoxId, pos: latRed, color: COLOR_RED };
+        const blueBox = { id: ++maxBoxId, pos: latBlue, color: COLOR_BLUE };
+        nextWorlds[side].boxes = state.worlds[side].boxes
+          .filter(b => b.id !== plan.box.id)
+          .map(b => ({ ...b }))
+          .concat([redBox, blueBox]);
+
+        const dispEvent = {
+          type: 'prism_dispersion',
+          boardIndex: side,
+          prismPos: plan.beyond,
+          redPos: latRed,
+          bluePos: latBlue
+        };
+        if (side === 0) disp0 = dispEvent; else disp1 = dispEvent;
+      }
+    }
+
+    // Apply any transmutations or transferred boxes from conduit operations
+    for (const { side, cp } of conduitPushes) {
+      if (!cp) continue;
+      const accepted = side === 0 ? accepted0 : accepted1;
+      if (!accepted) continue;
+
+      const otherSide = cp.toSide;
+      if (cp.transmutedTarget) {
+        nextWorlds[otherSide].boxes = nextWorlds[otherSide].boxes.map(b => {
+          if (b.id === cp.transmutedTarget) {
+            return { ...b, color: COLOR_PURPLE };
+          }
+          return b;
+        });
+      }
+      if (cp.transferredBox) {
+        nextWorlds[otherSide].boxes.push({ ...cp.transferredBox });
+      }
+    }
+  }
+
+  nextWorlds[0].boxes.sort((a, b) => a.pos - b.pos);
+  nextWorlds[1].boxes.sort((a, b) => a.pos - b.pos);
+
+  const changed = accepted0 || accepted1;
+
+  // Enforce fail-safe invariant: A push or synthesis can NEVER occur if movement was rejected
+  pushed0 = pushed0 && accepted0;
+  pushed1 = pushed1 && accepted1;
+  synth0 = accepted0 ? synth0 : null;
+  synth1 = accepted1 ? synth1 : null;
+
+  return {
+    next: { worlds: nextWorlds },
+    events: {
+      moves: [accepted0, accepted1],
+      pushes: [Boolean(pushed0), Boolean(pushed1)],
+      syntheses: [synth0, synth1],
+      dispersions: [disp0, disp1],
+      transits
+    },
+    changed
+  };
+}
+
+const step_engine = step;
+
+function isSolved(config, state) {
+  for (let side = 0; side < 2; side++) {
+    const board = config.boards[side];
+    const world = state.worlds[side];
+    const boxPositions = new Set(world.boxes.map(b => b.pos));
+
+    for (const g of board.goals) {
+      if (!boxPositions.has(g)) {
+        return false;
+      }
+    }
+  }
+
+  const totalCovered = config.boards[0].goals.length + config.boards[1].goals.length;
+  const survivingBoxes = state.worlds[0].boxes.length + state.worlds[1].boxes.length;
+  return survivingBoxes >= totalCovered;
+}
+
+function countSurvivingBoxes(state) {
+  return state.worlds[0].boxes.length + state.worlds[1].boxes.length;
+}
+
+return {compile,step,key,isSolved};})();
+const PitEngine=(()=>{
+/**
+ * CG-PIT-PILLAR-1: Pure rule engine for "Pit-to-Pillar" (本界填坑成路，对界生成石柱).
+ *
+ * Rules:
+ * 1. Two boards receive synchronized direction input (default: identity).
+ * 2. Pits (PIT) start as impassable holes (players cannot enter).
+ * 3. When a box is pushed into an unfilled pit:
+ *    - The box is consumed.
+ *    - The pit becomes a walkable floor (FILLED_FLOOR).
+ *    - The paired coordinate on the other board becomes a solid pillar (PILLAR).
+ * 4. Safety Clamping (防杀冲突拒绝):
+ *    - If the other board currently has an occupant (player or box) on the pillar coordinate,
+ *      OR if the other board's intent moves an entity into the pillar coordinate,
+ *      the push-into-pit intent is REJECTED.
+ *    - When rejected, the pushing board does not move, while the other board's legal move proceeds.
+ * 5. Changes to topography commit at the end of the step and take effect on subsequent steps.
+ * 6. Solved condition: all goals on each board are covered by surviving boxes.
+ */
+
+const DIRS = ['U', 'D', 'L', 'R'];
+const MAPS = { identity: [0, 1, 2, 3], vertical: [0, 1, 3, 2], slash: [3, 2, 0, 1] };
+const VECTORS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+const normalize = w => [w[0], ...w.slice(1).sort((a, b) => a - b)];
+
+function compile(level) {
+  if (level.ruleVersion !== 'CG-PIT-PILLAR-1' || !Array.isArray(level.boards) ||
+      level.boards.length !== 2 || !Object.hasOwn(MAPS, level.mapping || 'identity')) {
+    throw Error('Invalid CG-PIT-PILLAR-1 configuration');
+  }
+
+  const mappingKey = level.mapping || 'identity';
+  const boards = level.boards.map((rows, side) => {
+    if (!Array.isArray(rows) || !rows.length || typeof rows[0] !== 'string' || !rows[0].length ||
+        rows.some(r => typeof r !== 'string' || r.length !== rows[0].length)) {
+      throw Error(`Rectangular XSB required for board ${side}`);
+    }
+    const width = rows[0].length;
+    const floor = [], goals = [], boxes = [], rawPits = [];
+    let player;
+
+    rows.forEach((row, y) => [...row].forEach((ch, x) => {
+      // Characters: '#' wall, ' ' floor, '.' goal, '$' box, '@' player, '*' box on goal, '+' player on goal, '_' pit
+      if (!'# .@$*+_'.includes(ch)) throw Error(`Invalid tile '${ch}' at (${x},${y})`);
+      if (ch === '#') return;
+      const pos = y * width + x;
+      if (ch === '_') {
+        rawPits.push(pos);
+      } else {
+        floor.push(pos);
+      }
+      if ('.*+'.includes(ch)) goals.push(pos);
+      if ('$*'.includes(ch)) boxes.push(pos);
+      if ('@+'.includes(ch)) {
+        if (player !== undefined) throw Error(`Multiple players on board ${side}`);
+        player = pos;
+      }
+    }));
+
+    if (player === undefined) throw Error(`Board ${side} requires a player`);
+
+    const allPositions = new Set([...floor, ...rawPits]);
+    const neighbors = {};
+    for (const pos of allPositions) {
+      neighbors[pos] = VECTORS.map(([dx, dy]) => {
+        const x = (pos % width) + dx, y = Math.floor(pos / width) + dy;
+        const q = y * width + x;
+        return x >= 0 && x < width && y >= 0 && y < rows.length && allPositions.has(q) ? q : -1;
+      });
+    }
+
+    return {
+      width,
+      height: rows.length,
+      floor,
+      rawPits,
+      goals,
+      neighbors,
+      initial: normalize([player, ...boxes])
+    };
+  });
+
+  // Parse pairs: each pair connects a pit on one side to a pillar position on the other side
+  const pairs = (level.pairs || []).map((p, idx) => {
+    const pitSide = p.pit.side;
+    const pillarSide = p.pillar.side;
+    if (pitSide === pillarSide) throw Error(`Pair ${idx}: pit and pillar must be on opposite sides`);
+    const bPit = boards[pitSide], bPillar = boards[pillarSide];
+    const pitPos = p.pit.y * bPit.width + p.pit.x;
+    const pillarPos = p.pillar.y * bPillar.width + p.pillar.x;
+
+    if (!bPit.rawPits.includes(pitPos) && !bPit.floor.includes(pitPos)) {
+      throw Error(`Pair ${idx}: pit coordinate is not valid floor or pit tile`);
+    }
+    if (!bPillar.floor.includes(pillarPos)) {
+      throw Error(`Pair ${idx}: pillar position must be standard floor`);
+    }
+    if (bPillar.goals.includes(pillarPos)) {
+      throw Error(`Pair ${idx}: pillar cannot be on a goal tile`);
+    }
+
+    return {
+      id: p.id || `P${idx + 1}`,
+      pit: { side: pitSide, x: p.pit.x, y: p.pit.y, pos: pitPos },
+      pillar: { side: pillarSide, x: p.pillar.x, y: p.pillar.y, pos: pillarPos }
+    };
+  });
+
+  const totalGoals = boards[0].goals.length + boards[1].goals.length;
+  const initialBoxes = (boards[0].initial.length - 1) + (boards[1].initial.length - 1);
+  if (initialBoxes < totalGoals) {
+    throw Error(`Initial boxes (${initialBoxes}) cannot be less than total goals (${totalGoals})`);
+  }
+
+  const initialFilled = new Array(pairs.length).fill(false);
+
+  return {
+    ruleVersion: 'CG-PIT-PILLAR-1',
+    mapping: MAPS[mappingKey],
+    mappingKey,
+    boards,
+    pairs,
+    totalGoals,
+    initialBoxes,
+    initial: {
+      worlds: [boards[0].initial.slice(), boards[1].initial.slice()],
+      filledPits: initialFilled
+    }
+  };
+}
+
+function key(state) {
+  const wStr = state.worlds.map(w => normalize(w).join(',')).join('|');
+  const pStr = state.filledPits.map(b => (b ? '1' : '0')).join('');
+  return `${wStr}#${pStr}`;
+}
+
+function solved(config, state) {
+  const survivingBoxes = (state.worlds[0].length - 1) + (state.worlds[1].length - 1);
+  if (survivingBoxes !== config.totalGoals) return false;
+
+  // Solved iff all goals on both boards are covered by surviving boxes
+  for (let side = 0; side < 2; side++) {
+    const boxes = state.worlds[side].slice(1);
+    for (const g of config.boards[side].goals) {
+      if (!boxes.includes(g)) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Check if a cell is currently walkable for players.
+ */
+function isWalkableForPlayer(config, state, side, pos) {
+  const board = config.boards[side];
+  // If it's an active pillar, blocked
+  for (let i = 0; i < config.pairs.length; i++) {
+    if (state.filledPits[i] && config.pairs[i].pillar.side === side && config.pairs[i].pillar.pos === pos) {
+      return false; // Solid pillar!
+    }
+  }
+  // If it's a pit: walkable only if already filled
+  for (let i = 0; i < config.pairs.length; i++) {
+    if (config.pairs[i].pit.side === side && config.pairs[i].pit.pos === pos) {
+      return state.filledPits[i]; // only walkable if filled
+    }
+  }
+  // Otherwise must be in regular floor
+  return board.floor.includes(pos);
+}
+
+/**
+ * Check if a box can enter or land on a cell.
+ * Returns: { canEnter: boolean, fillsPitIndex: number | -1 }
+ */
+function checkCellForBox(config, state, side, pos) {
+  const board = config.boards[side];
+  // Check active pillars: solid wall
+  for (let i = 0; i < config.pairs.length; i++) {
+    if (state.filledPits[i] && config.pairs[i].pillar.side === side && config.pairs[i].pillar.pos === pos) {
+      return { canEnter: false, fillsPitIndex: -1 };
+    }
+  }
+  // Check unfilled pits: can be pushed into, will consume box
+  for (let i = 0; i < config.pairs.length; i++) {
+    if (!state.filledPits[i] && config.pairs[i].pit.side === side && config.pairs[i].pit.pos === pos) {
+      return { canEnter: true, fillsPitIndex: i };
+    }
+  }
+  // Filled pits or regular floor
+  for (let i = 0; i < config.pairs.length; i++) {
+    if (state.filledPits[i] && config.pairs[i].pit.side === side && config.pairs[i].pit.pos === pos) {
+      return { canEnter: true, fillsPitIndex: -1 };
+    }
+  }
+  if (board.floor.includes(pos)) {
+    return { canEnter: true, fillsPitIndex: -1 };
+  }
+  return { canEnter: false, fillsPitIndex: -1 };
+}
+
+/**
+ * Compute single board movement intent before conflict resolution.
+ */
+function localIntent(config, state, side, direction) {
+  const board = config.boards[side];
+  const world = state.worlds[side];
+  const player = world[0];
+  const boxes = world.slice(1);
+
+  const dest = board.neighbors[player] ? board.neighbors[player][direction] : -1;
+  if (dest < 0) return null;
+
+  // Is dest occupied by a box?
+  if (!boxes.includes(dest)) {
+    // Player moving to empty space
+    if (!isWalkableForPlayer(config, state, side, dest)) return null;
+    return {
+      side,
+      playerNext: dest,
+      boxesNext: boxes.slice(),
+      pushedBox: false,
+      pitFill: null
+    };
+  }
+
+  // Player attempting to push a box at dest
+  const beyond = board.neighbors[dest] ? board.neighbors[dest][direction] : -1;
+  if (beyond < 0) return null;
+  // Cannot push into another box on the same board
+  if (boxes.includes(beyond)) return null;
+
+  const boxCheck = checkCellForBox(config, state, side, beyond);
+  if (!boxCheck.canEnter) return null;
+
+  if (boxCheck.fillsPitIndex >= 0) {
+    // Box will fall into pit: consumed!
+    const newBoxes = boxes.filter(p => p !== dest);
+    return {
+      side,
+      playerNext: dest,
+      boxesNext: newBoxes,
+      pushedBox: true,
+      pitFill: {
+        pitIndex: boxCheck.fillsPitIndex,
+        pair: config.pairs[boxCheck.fillsPitIndex]
+      }
+    };
+  }
+
+  // Normal box push
+  const newBoxes = boxes.filter(p => p !== dest);
+  newBoxes.push(beyond);
+  return {
+    side,
+    playerNext: dest,
+    boxesNext: newBoxes.sort((a, b) => a - b),
+    pushedBox: true,
+    pitFill: null
+  };
+}
+
+/**
+ * Execute one global input step with dual-board resolution and safety clamping.
+ */
+function step(config, state, input, options = {}) {
+  const d = DIRS.indexOf(input);
+  if (d < 0) throw Error(`Invalid input direction '${input}'`);
+
+  const d0 = d;
+  const d1 = options.identity ? d : config.mapping[d];
+
+  const plans = [
+    localIntent(config, state, 0, d0),
+    localIntent(config, state, 1, d1)
+  ];
+
+  const accepted = [Boolean(plans[0]), Boolean(plans[1])];
+
+  // Conflict Resolution / Safety Clamping loop:
+  // If a side wants to fill a pit, check if the other side's pillar position is occupied
+  // either in state (current) or in the other side's projected movement.
+  let repeat;
+  do {
+    repeat = false;
+    for (let side = 0; side < 2; side++) {
+      if (!accepted[side] || !plans[side]?.pitFill) continue;
+
+      const otherSide = 1 - side;
+      const pillarPos = plans[side].pitFill.pair.pillar.pos;
+
+      // 1. Check if otherSide is currently occupying the pillar position
+      const currentlyOccupied = state.worlds[otherSide].includes(pillarPos);
+
+      // 2. Check if otherSide's accepted move moves an entity into the pillar position
+      let projectedOccupied = false;
+      if (accepted[otherSide] && plans[otherSide]) {
+        const otherPlan = plans[otherSide];
+        if (otherPlan.playerNext === pillarPos || otherPlan.boxesNext.includes(pillarPos)) {
+          projectedOccupied = true;
+        }
+      } else {
+        // If other side isn't moving, their current positions remain
+        projectedOccupied = currentlyOccupied;
+      }
+
+      if (currentlyOccupied || projectedOccupied) {
+        // Reject this fill intent
+        accepted[side] = false;
+        repeat = true;
+      }
+    }
+  } while (repeat);
+
+  // Now commit movements
+  const nextWorlds = [
+    accepted[0] && plans[0] ? [plans[0].playerNext, ...plans[0].boxesNext] : state.worlds[0].slice(),
+    accepted[1] && plans[1] ? [plans[1].playerNext, ...plans[1].boxesNext] : state.worlds[1].slice()
+  ];
+
+  const nextFilledPits = state.filledPits.slice();
+  const pitFills = [false, false];
+  const blockedFills = [false, false];
+
+  for (let side = 0; side < 2; side++) {
+    if (plans[side]?.pitFill) {
+      if (accepted[side]) {
+        nextFilledPits[plans[side].pitFill.pitIndex] = true;
+        pitFills[side] = true;
+      } else {
+        blockedFills[side] = true;
+      }
+    }
+  }
+
+  const nextState = {
+    worlds: nextWorlds.map(normalize),
+    filledPits: nextFilledPits
+  };
+
+  const changed = key(state) !== key(nextState);
+
+  const events = {
+    moves: accepted,
+    pushes: [
+      Boolean(accepted[0] && plans[0]?.pushedBox),
+      Boolean(accepted[1] && plans[1]?.pushedBox)
+    ],
+    pitFills,
+    blockedFills
+  };
+
+  return {
+    next: nextState,
+    changed,
+    events
+  };
+}
+
+return {compile,step,key,solved};})();
+function createGame(levels, engines, onChange = () => {}, scheduler = globalThis) {
+  let index=0,engine,config,state,history,timer=null,generation=0;
+  function stop() {generation++;if(timer!==null)scheduler.clearTimeout(timer);timer=null;}
+  function load(next) {
+    stop();index=(next+levels.length)%levels.length;
+    engine=engines[levels[index].ruleVersion];config=engine.compile(levels[index]);
+    state=structuredClone(config.initial);history=[state];onChange();
+  }
+  function apply(input) {
+    const result=engine.step(config,state,input);
+    if(result.changed){state=result.next;history.push(state);}onChange();
+  }
+  function move(input){stop();apply(input);}
+  function undo(){stop();if(history.length>1){history.pop();state=history.at(-1);}onChange();}
+  function reset(){load(index);}
+  function demo(){
+    reset();const token=generation,solution=levels[index].solution;let cursor=0;
+    function tick(){
+      if(token!==generation)return;
+      if(cursor>=solution.length){timer=null;onChange();return;}
+      apply(solution[cursor++]);timer=scheduler.setTimeout(tick,220);
+    }
+    timer=scheduler.setTimeout(tick,220);onChange();
+  }
+  function snapshot(){return {index,level:levels[index],config,state,steps:history.length-1,playing:timer!==null,
+    solved:(engine.solved||engine.isSolved)(config,state)};}
+  load(0);
+  return {load,move,undo,reset,demo,stop,snapshot};
+}
+
+const DATA = {"version":1,"title":"多样性试验组","count":6,"certification":"SOLVED_REPLAYED","exact":false,"levels":[{"id":"dv-01","title":"会合地点","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","boards":[["########","#@     #","# R B  #","## # ###","#    p.#","########"],["###","#@#","###"]],"candidateHash":"66d10c3218b4bf8fc2e4e8f45af0dfb0bfc64e2b002212d23ee8959bb39d756f","solution":"","solutionLength": 0,"expectedSteps":15,"order":1,"source":{"kind":"original","author":"项目原创试验布局","classicSource":null},"design":{"type":"合成地点","decision":"选择保留向下推位的会合处，避免把紫箱合在右端尽头。","space":"上方绕行区、中央落箱口与右端盲巷。","roles":"红蓝箱合成一个任务箱。","difference":"两处可达合成位置；选择位置而非单纯触发合成。","teachingStage":"单机制选择与预留空间","temporaryStorage":"参考解未出现暂存后回收","multipleEntrances":"有中央及右端两处会合见证","unproven":"只验证参考解和列出的局部分支，不承诺唯一解、所有解同一安排或人类难度。"},"audit":{"status":"SOLVED_REPLAYED","exact":false,"engineHash":"01d1c006507604a0778f66a9b9da3ac230b8f3dadd2098e76d6658016e0d8579","solutionLength": 0,"events":[{"step":2,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":18,"boxes":[{"id":1,"pos":19,"color":1},{"id":2,"pos":20,"color":2}]},{"player":4,"boxes":[]}]},{"step":3,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[{"type":"synthesis","boardIndex":0,"pos":20,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":19,"boxes":[{"id":2,"pos":20,"color":3}]},{"player":4,"boxes":[]}]},{"step":6,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":20,"boxes":[{"id":2,"pos":28,"color":3}]},{"player":4,"boxes":[]}]},{"step":7,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":28,"boxes":[{"id":2,"pos":36,"color":3}]},{"player":4,"boxes":[]}]},{"step":14,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":36,"boxes":[{"id":2,"pos":37,"color":3}]},{"player":4,"boxes":[]}]},{"step":15,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":37,"boxes":[{"id":2,"pos":38,"color":3}]},{"player":4,"boxes":[]}]}],"budget":{"maxStates":200000,"wallClockMs":30000},"referenceVerified":true}},{"id":"dv-02","title":"各走各的门","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","boards":[["##########","#@  #    #","# R r   ##","#   #  p.#","# B b   ##","#   #    #","##########"],["###","#@#","###"]],"candidateHash":"217737d06b1c360eb304f9bdb7dcd465265e2f36c891f417ef33d201fb939ccb","solution":"","solutionLength": 0,"expectedSteps":26,"order":2,"source":{"kind":"original","author":"项目原创试验布局","classicSource":null},"design":{"type":"原色任务与合成时机","decision":"先让红蓝分别通过自己的门，再在右室会合。","space":"双色分流入口与右室共享紫门。","roles":"两只原色箱先各自通行，再合成任务箱。","difference":"保留颜色能力直到各自完成通行；区别于会合地点题。","teachingStage":"单机制选择与预留空间","temporaryStorage":"参考解未出现暂存后回收","multipleEntrances":"红、蓝各一个入口","unproven":"只验证参考解和列出的局部分支，不承诺唯一解、所有解同一安排或人类难度。"},"audit":{"status":"SOLVED_REPLAYED","exact":false,"engineHash":"01d1c006507604a0778f66a9b9da3ac230b8f3dadd2098e76d6658016e0d8579","solutionLength": 0,"events":[{"step":2,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":22,"boxes":[{"id":1,"pos":23,"color":1},{"id":2,"pos":42,"color":2}]},{"player":4,"boxes":[]}]},{"step":3,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":23,"boxes":[{"id":1,"pos":24,"color":1},{"id":2,"pos":42,"color":2}]},{"player":4,"boxes":[]}]},{"step":4,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":24,"boxes":[{"id":1,"pos":25,"color":1},{"id":2,"pos":42,"color":2}]},{"player":4,"boxes":[]}]},{"step":5,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":25,"boxes":[{"id":1,"pos":26,"color":1},{"id":2,"pos":42,"color":2}]},{"player":4,"boxes":[]}]},{"step":8,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":26,"boxes":[{"id":1,"pos":36,"color":1},{"id":2,"pos":42,"color":2}]},{"player":4,"boxes":[]}]},{"step":16,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":42,"boxes":[{"id":1,"pos":36,"color":1},{"id":2,"pos":43,"color":2}]},{"player":4,"boxes":[]}]},{"step":17,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":43,"boxes":[{"id":1,"pos":36,"color":1},{"id":2,"pos":44,"color":2}]},{"player":4,"boxes":[]}]},{"step":18,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":44,"boxes":[{"id":1,"pos":36,"color":1},{"id":2,"pos":45,"color":2}]},{"player":4,"boxes":[]}]},{"step":19,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":45,"boxes":[{"id":1,"pos":36,"color":1},{"id":2,"pos":46,"color":2}]},{"player":4,"boxes":[]}]},{"step":22,"input":"U","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[{"type":"synthesis","boardIndex":0,"pos":36,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":46,"boxes":[{"id":1,"pos":36,"color":3}]},{"player":4,"boxes":[]}]},{"step":25,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":36,"boxes":[{"id":1,"pos":37,"color":3}]},{"player":4,"boxes":[]}]},{"step":26,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":37,"boxes":[{"id":1,"pos":38,"color":3}]},{"player":4,"boxes":[]}]}],"budget":{"maxStates":200000,"wallClockMs":30000},"referenceVerified":true}},{"id":"dv-03","title":"先留两个出口","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","boards":[["########","#  @   #","#  P   #","# $^   #","#      #","# . . .#","########"],["###","#@#","###"]],"candidateHash":"23c4d4f77f5910a69705a691d89b66ded698ac72e8da3834af1958640545c05a","solution":"","solutionLength": 0,"expectedSteps":24,"order":3,"source":{"kind":"original","author":"项目原创试验布局","classicSource":null},"design":{"type":"分光出口整理","decision":"移走左翼上的普通箱，为即将生成的红箱留位置。","space":"被占用的分光左翼与下方三个目标。","roles":"普通箱先清出口；紫箱分成两个任务箱。","difference":"先安排未来新增箱子的空间；没有合成流程。","teachingStage":"单机制选择与预留空间","temporaryStorage":"参考解未出现暂存后回收","multipleEntrances":"未主张多个可选入口","unproven":"只验证参考解和列出的局部分支，不承诺唯一解、所有解同一安排或人类难度。"},"audit":{"status":"SOLVED_REPLAYED","exact":false,"engineHash":"01d1c006507604a0778f66a9b9da3ac230b8f3dadd2098e76d6658016e0d8579","solutionLength": 0,"events":[{"step":3,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":26,"boxes":[{"id":1,"pos":19,"color":3},{"id":2,"pos":34,"color":0}]},{"player":4,"boxes":[]}]},{"step":4,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":34,"boxes":[{"id":1,"pos":19,"color":3},{"id":2,"pos":42,"color":0}]},{"player":4,"boxes":[]}]},{"step":9,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[{"type":"prism_dispersion","boardIndex":0,"prismPos":27,"redPos":26,"bluePos":28},null],"transits":[]},"worlds":[{"player":19,"boxes":[{"id":3,"pos":26,"color":1},{"id":4,"pos":28,"color":2},{"id":2,"pos":42,"color":0}]},{"player":4,"boxes":[]}]},{"step":11,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":26,"boxes":[{"id":4,"pos":28,"color":2},{"id":3,"pos":34,"color":1},{"id":2,"pos":42,"color":0}]},{"player":4,"boxes":[]}]},{"step":14,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":34,"boxes":[{"id":4,"pos":28,"color":2},{"id":3,"pos":35,"color":1},{"id":2,"pos":42,"color":0}]},{"player":4,"boxes":[]}]},{"step":15,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":35,"boxes":[{"id":4,"pos":28,"color":2},{"id":3,"pos":36,"color":1},{"id":2,"pos":42,"color":0}]},{"player":4,"boxes":[]}]},{"step":17,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":28,"boxes":[{"id":4,"pos":29,"color":2},{"id":3,"pos":36,"color":1},{"id":2,"pos":42,"color":0}]},{"player":4,"boxes":[]}]},{"step":18,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":36,"boxes":[{"id":4,"pos":29,"color":2},{"id":2,"pos":42,"color":0},{"id":3,"pos":44,"color":1}]},{"player":4,"boxes":[]}]},{"step":20,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":29,"boxes":[{"id":4,"pos":30,"color":2},{"id":2,"pos":42,"color":0},{"id":3,"pos":44,"color":1}]},{"player":4,"boxes":[]}]},{"step":23,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":30,"boxes":[{"id":4,"pos":38,"color":2},{"id":2,"pos":42,"color":0},{"id":3,"pos":44,"color":1}]},{"player":4,"boxes":[]}]},{"step":24,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":38,"boxes":[{"id":2,"pos":42,"color":0},{"id":3,"pos":44,"color":1},{"id":4,"pos":46,"color":2}]},{"player":4,"boxes":[]}]}],"budget":{"maxStates":200000,"wallClockMs":30000},"referenceVerified":true}},{"id":"dv-04","title":"收货也要留推位","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","boards":[["########","#@     #","# $  B##","#    p.#","# .  ###","########"],["######","#@R c#","######"]],"conduits":[{"a":{"side":0,"x":2,"y":2},"b":{"side":1,"x":4,"y":1},"outputSide":0}],"candidateHash":"551bfd3d82681ba604798bbae200dc1cbfeee8969a5fd0d5ef0a34bf64ccb117","solution":"","solutionLength": 0,"expectedSteps":16,"order":4,"source":{"kind":"original","author":"项目原创试验布局","classicSource":null},"design":{"type":"接货区争用","decision":"先把占据接货端点的普通箱移走，再接收红箱并与蓝箱会合。","space":"接货格同时是本地普通箱初始位置，旁边连接合成走廊。","roles":"普通箱完成本地目标；外来红箱与本地蓝箱合成。","difference":"两个世界共享接货格；不是空房间里无条件传送。","teachingStage":"跨区域协调与资源分工","temporaryStorage":"参考解未出现暂存后回收","multipleEntrances":"未主张多个可选入口","unproven":"只验证参考解和列出的局部分支，不承诺唯一解、所有解同一安排或人类难度。"},"audit":{"status":"SOLVED_REPLAYED","exact":false,"engineHash":"01d1c006507604a0778f66a9b9da3ac230b8f3dadd2098e76d6658016e0d8579","solutionLength": 0,"events":[{"step":1,"input":"R","events":{"moves":[true,true],"pushes":[false,true],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":10,"boxes":[{"id":1,"pos":18,"color":0},{"id":2,"pos":21,"color":2}]},{"player":8,"boxes":[{"id":3,"pos":9,"color":1}]}]},{"step":2,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":18,"boxes":[{"id":2,"pos":21,"color":2},{"id":1,"pos":26,"color":0}]},{"player":8,"boxes":[{"id":3,"pos":9,"color":1}]}]},{"step":3,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":26,"boxes":[{"id":2,"pos":21,"color":2},{"id":1,"pos":34,"color":0}]},{"player":8,"boxes":[{"id":3,"pos":9,"color":1}]}]},{"step":4,"input":"R","events":{"moves":[true,true],"pushes":[false,true],"syntheses":[null,null],"dispersions":[null,null],"transits":[{"type":"conduit_transit","fromSide":1,"toSide":0,"fromPos":10,"toPos":18,"color":1}]},"worlds":[{"player":27,"boxes":[{"id":3,"pos":18,"color":1},{"id":2,"pos":21,"color":2},{"id":1,"pos":34,"color":0}]},{"player":9,"boxes":[]}]},{"step":8,"input":"R","events":{"moves":[true,true],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":18,"boxes":[{"id":3,"pos":19,"color":1},{"id":2,"pos":21,"color":2},{"id":1,"pos":34,"color":0}]},{"player":8,"boxes":[]}]},{"step":9,"input":"R","events":{"moves":[true,true],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":19,"boxes":[{"id":3,"pos":20,"color":1},{"id":2,"pos":21,"color":2},{"id":1,"pos":34,"color":0}]},{"player":9,"boxes":[]}]},{"step":10,"input":"R","events":{"moves":[true,true],"pushes":[true,false],"syntheses":[{"type":"synthesis","boardIndex":0,"pos":21,"consumedId":3,"targetId":2,"resultingColor":3,"color":3},null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":20,"boxes":[{"id":2,"pos":21,"color":3},{"id":1,"pos":34,"color":0}]},{"player":10,"boxes":[]}]},{"step":13,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":21,"boxes":[{"id":2,"pos":29,"color":3},{"id":1,"pos":34,"color":0}]},{"player":10,"boxes":[]}]},{"step":16,"input":"R","events":{"moves":[true,true],"pushes":[true,false],"syntheses":[null,null],"dispersions":[null,null],"transits":[]},"worlds":[{"player":29,"boxes":[{"id":2,"pos":30,"color":3},{"id":1,"pos":34,"color":0}]},{"player":10,"boxes":[]}]}],"budget":{"maxStates":200000,"wallClockMs":30000},"referenceVerified":true}},{"id":"dv-05","title":"先过桥再施工","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","boards":[["#######","#@    #","# $_  #","### ###","# $  .#","#     #","#######"],["#######","#@    #","# ### #","# . $ #","#######"]],"pairs":[{"id":"A","pit":{"side":0,"x":3,"y":2},"pillar":{"side":1,"x":5,"y":2}}],"candidateHash":"b8c59e76c7d3ec4348c0a522cf51c24525d9d830c365e69f92a374f2f275daba","solution":"","solutionLength": 0,"expectedSteps":23,"order":5,"source":{"kind":"original","author":"项目原创试验布局","classicSource":null},"design":{"type":"改变地形的时机","decision":"先从右侧绕到对界箱子后方，再填坑打开本界下仓。","space":"上仓填坑开启下仓入口；对界环路右段随之封闭。","roles":"上仓箱施工，下仓箱与对界箱分别归位。","difference":"先改变人物所在区域，再不可逆地改变两侧通路。","teachingStage":"跨区域协调与资源分工","temporaryStorage":"参考解未出现暂存后回收","multipleEntrances":"未主张多个可选入口","unproven":"只验证参考解和列出的局部分支，不承诺唯一解、所有解同一安排或人类难度。"},"audit":{"status":"SOLVED_REPLAYED","exact":false,"engineHash":"bd64a739cc8390d11b2182c721e80177833d1b9035ec9b3bdc2d8642d483b2a8","solutionLength": 0,"events":[{"step":13,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"pitFills":[true,false],"blockedFills":[false,false]},"worlds":[[16,30],[26,25]]},{"step":18,"input":"L","events":{"moves":[true,true],"pushes":[false,true],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[37,30],[25,24]]},{"step":19,"input":"L","events":{"moves":[true,true],"pushes":[false,true],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[36,30],[24,23]]},{"step":21,"input":"R","events":{"moves":[true,true],"pushes":[true,false],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[30,31],[25,23]]},{"step":22,"input":"R","events":{"moves":[true,true],"pushes":[true,false],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[31,32],[26,23]]},{"step":23,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[32,33],[26,23]]}],"budget":{"maxStates":200000,"wallClockMs":30000},"referenceVerified":true}},{"id":"dv-06","title":"留下能回头的箱子","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","boards":[["########","#@   ###","# $ $ _#","# #  ###","#  .####","########"],["#####","#@  #","# $.#","#####"]],"pairs":[{"id":"A","pit":{"side":0,"x":6,"y":2},"pillar":{"side":1,"x":3,"y":1}}],"candidateHash":"cc3c21e144be3a90475b5621c592367a640b63ce13f4b8a5c6e2d667025cbf38","solution":"","solutionLength": 0,"expectedSteps":12,"order":6,"source":{"kind":"original","author":"项目原创试验布局","classicSource":null},"design":{"type":"施工与任务分工","decision":"保留左箱沿中间竖道下行，用右箱填坑。","space":"右侧箱子下方是不可回收侧袋；左侧竖道通往目标。","roles":"左箱负责目标，右箱负责施工；两只都能被送入坑。","difference":"箱子可达性不同，错误分工会留下无法回收的箱子。","teachingStage":"跨区域协调与资源分工","temporaryStorage":"错误分支展示不可回收侧袋；正常解不需要暂存回收","multipleEntrances":"未主张多个可选入口","unproven":"只验证参考解和列出的局部分支，不承诺唯一解、所有解同一安排或人类难度。"},"audit":{"status":"SOLVED_REPLAYED","exact":false,"engineHash":"bd64a739cc8390d11b2182c721e80177833d1b9035ec9b3bdc2d8642d483b2a8","solutionLength": 0,"events":[{"step":2,"input":"R","events":{"moves":[true,true],"pushes":[true,true],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[18,19,20],[12,13]]},{"step":5,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[19,20,27],[8,13]]},{"step":6,"input":"D","events":{"moves":[true,false],"pushes":[true,false],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[27,20,35],[8,13]]},{"step":11,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"pitFills":[false,false],"blockedFills":[false,false]},"worlds":[[20,21,35],[12,13]]},{"step":12,"input":"R","events":{"moves":[true,false],"pushes":[true,false],"pitFills":[true,false],"blockedFills":[false,false]},"worlds":[[21,35],[12,13]]}],"budget":{"maxStates":200000,"wallClockMs":30000},"referenceVerified":true}}]};
+const engines={'CG-COLOR-SYNTH-1':ColorEngine,'CG-PIT-PILLAR-1':PitEngine};
+let game;
+const byId=id=>document.getElementById(id);
+function render(){
+ if(!game)return;
+ const s=game.snapshot(),isPit=s.level.ruleVersion.includes('PIT');
+ byId('title').textContent=s.level.id+' · '+s.level.title;
+ byId('rules').textContent=isPit?'两侧同向、独立移动。箱子填坑后消失，坑变路，对界同字母位置升柱；升柱处被占则填坑受阻。剩余箱子必须全部覆盖目标。':'红＋蓝相撞合成紫箱；颜色门只允许同色箱，人物自由通过。紫箱推入 ▲ 分光：纵向推入红左蓝右，横向推入红上蓝下。配对 ◇ 运输箱子；所有目标被覆盖即完成。';
+ byId('steps').textContent='当前步数 '+s.steps;
+ byId('reference').textContent='参考解步数 '+s.level.solutionLength;
+ byId('status').textContent=s.level.id==='dv-06'?' · 待重做：当前版本可绕过填坑':s.solved?' · 已完成':s.playing?' · 演示中':'';
+ byId('status').className=s.solved?'success':'';
+ byId('design').textContent=s.level.design.decision+' '+s.level.design.space+' '+s.level.design.difference;
+ document.querySelectorAll('#levels button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===s.index)));
+ byId('boards').replaceChildren();
+ s.config.boards.forEach((board,side)=>{
+  if(!isPit&&side===1&&board.floor.length===1&&board.goals.length===0&&s.state.worlds[1].boxes.length===0)return;
+  const card=document.createElement('div');card.className='board';
+  const label=document.createElement('h3');label.textContent=side===0?'世界 A':'世界 B';card.append(label);
+  const grid=document.createElement('div');grid.className='grid';grid.setAttribute('aria-label',label.textContent+' 棋盘');
+  const size=Math.min(36,Math.floor((window.innerWidth-58)/board.width)-2);
+  grid.style.setProperty('--cell',size+'px');grid.style.gridTemplateColumns='repeat('+board.width+',var(--cell))';
+  const w=s.state.worlds[side],player=isPit?w[0]:w.player;
+  const boxes=isPit?w.slice(1).map(pos=>({pos,color:0})):w.boxes;
+  for(let y=0;y<board.height;y++)for(let x=0;x<board.width;x++){
+    const pos=y*board.width+x,cell=document.createElement('div');cell.className='cell';let desc='地板';
+    if(s.level.boards[side][y][x]==='#'){cell.classList.add('wall');desc='墙';}
+    if(board.goals.includes(pos)){cell.classList.add('goal');desc='目标';}
+    if(isPit){s.config.pairs.forEach((pair,i)=>{
+      if(pair.pit.side===side&&pair.pit.pos===pos){cell.classList.add(s.state.filledPits[i]?'planned':'pit');cell.textContent=pair.id;desc=s.state.filledPits[i]?'已填坑':'坑';}
+      if(pair.pillar.side===side&&pair.pillar.pos===pos){cell.classList.add(s.state.filledPits[i]?'pillar':'planned');cell.textContent=pair.id;desc=s.state.filledPits[i]?'柱子':'立柱预定点';}
+    });}else{
+      if(board.gates[pos]){cell.classList.add('gate-'+board.gates[pos]);cell.textContent={r:'红',b:'蓝',p:'紫'}[board.gates[pos]];desc=cell.textContent+'门';}
+      if(board.prisms.has(pos)){cell.classList.add('prism');cell.textContent='▲';desc='棱镜';}
+      if(board.conduits.has(pos)){cell.classList.add('conduit');cell.textContent='◇';desc='跨界端点';}
+    }
+    const box=boxes.find(b=>b.pos===pos);
+    if(box||player===pos){const entity=document.createElement('span');const name=box?['普通箱','红箱','蓝箱','紫箱'][box.color]:'人物';entity.className='entity '+(box?['neutral','red','blue','purple'][box.color]:'player');entity.textContent=box?['箱','红','蓝','紫'][box.color]:'人';cell.append(entity);desc+=' · '+name;}
+    cell.title=label.textContent+' ('+x+','+y+') '+desc;grid.append(cell);
+  }
+  card.append(grid);byId('boards').append(card);
+ });
+}
+game=createGame(DATA.levels,engines,render);
+DATA.levels.forEach((l,i)=>{const b=document.createElement('button');b.textContent=(i+1)+'. '+l.title;b.onclick=()=>select(i);byId('levels').append(b);});
+function select(i){game.load(i);history.replaceState(null,'','#'+game.snapshot().level.id);}
+byId('undo').onclick=()=>game.undo();byId('reset').onclick=()=>game.reset();byId('demo').onclick=()=>game.demo();byId('pause').onclick=()=>{game.stop();render();};byId('next').onclick=()=>select(game.snapshot().index+1);
+document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>game.move(b.dataset.dir));
+window.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;const dir={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',w:'U',s:'D',a:'L',d:'R'}[e.key];if(dir){e.preventDefault();game.move(dir);}else if(e.key.toLowerCase()==='z')game.undo();else if(e.key.toLowerCase()==='r')game.reset();});
+function fromHash(){const i=DATA.levels.findIndex(l=>'#'+l.id===location.hash);select(i<0?0:i);}
+window.addEventListener('hashchange',fromHash);window.addEventListener('resize',render);window.addEventListener('pagehide',()=>game.stop());fromHash();
+</script></body></html>

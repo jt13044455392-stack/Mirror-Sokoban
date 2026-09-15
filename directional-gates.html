@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="从入门到进阶的紧凑镜闸关卡：一界守住压板，另一界借镜面变换过门。">
+  <title>第九章 · 定向镜闸</title>
+  <style>:root {color-scheme:light;--ink:#302c28;--muted:#665d54;--paper:#f8f3e9;--border:#c1b5a4;--warm:#a54a30;--cool:#286480;--gate-a:#945308;--gate-b:#624297;--tile:48px;font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:#e7e0d3}
+*{box-sizing:border-box}body{margin:0}button,a,summary{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer;touch-action:manipulation}button:disabled{cursor:default;opacity:.45}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #216489;outline-offset:4px}button{border:1px solid var(--border);background:var(--paper);color:var(--ink);border-radius:6px;padding:10px 14px;min-height:44px}button:hover:not(:disabled){background:#fffdfa;border-color:#766655}button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}[hidden]{display:none!important}main{max-width:1120px;margin:auto;padding:24px 28px 30px}.play-header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-bottom:18px;border-bottom:1px solid var(--border)}h1,h2,p{margin:0}h1{font-family:Georgia,"Songti SC",serif;font-size:32px;letter-spacing:.07em;font-weight:600}.eyebrow{font-size:14px;color:var(--muted);margin-bottom:7px}.back-link{font-size:14px;color:var(--muted);text-underline-offset:4px}#level-nav{display:flex;flex-wrap:wrap;gap:8px;padding:16px 0}#level-nav button{text-align:left;font-size:14px;flex:1;white-space:nowrap}#level-nav button[aria-current=true]{background:var(--ink);color:#fff;border-color:var(--ink)}.level-number{opacity:.65;margin-right:8px}.play-surface{border:1px solid var(--border);border-radius:10px;background:var(--paper);box-shadow:0 12px 36px #4a392310;overflow:hidden}.level-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:20px 24px 14px}.level-heading h2{font-size:22px;font-weight:600}.level-heading p{color:var(--muted);font-size:16px;line-height:1.6;margin-top:6px}.steps{display:flex;gap:8px;align-items:baseline;white-space:nowrap}.steps strong{font-size:30px;font-variant-numeric:tabular-nums}.steps span{font-size:14px;color:var(--muted)}.mapping{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;border-top:1px solid #c1b5a460;border-bottom:1px solid #c1b5a460;background:#fffaf3;padding:10px 16px;font-size:14px}.mapping strong{font-weight:600}.mapping span{word-spacing:8px;color:var(--muted)}.boards{display:grid;grid-template-columns:1fr 1fr;background:linear-gradient(90deg,#f1ddd0 0%,#f2e8dd 49.8%,#d4e4eb 50%,#e0edf0 100%)}.board-panel{padding:16px 12px 22px;min-width:0;display:flex;align-items:center;flex-direction:column}.board-panel:first-child{border-right:1px solid var(--border)}.board-caption{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:360px;margin-bottom:12px;gap:10px}.board-caption h3{font-size:16px;font-weight:600;margin:0;color:var(--warm)}.board-panel.mirror .board-caption h3{color:var(--cool)}.board-caption span{font-size:14px;color:var(--muted)}.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:240px}.board{display:grid;grid-template-columns:repeat(var(--cols),var(--tile));gap:2px;background:#8e8374;padding:3px;border-radius:5px;box-shadow:0 7px 0 #75695930}.tile{width:var(--tile);height:var(--tile);background:#f9f3e7;position:relative;border-radius:2px;display:flex;align-items:center;justify-content:center}.mirror .tile{background:#e8f3f5}.tile.wall{background:#524b43;box-shadow:inset 0 3px 0 #6e6458}.mirror .tile.wall{background:#475d65;box-shadow:inset 0 3px 0 #60767f}.tile.goal::after{content:"";width:30%;height:30%;border:2px solid #aa9171;border-radius:50%;position:absolute}.tile.device-a{--device:var(--gate-a)}.tile.device-b{--device:var(--gate-b)}.plate-disc{position:absolute;inset:10%;border:2px solid var(--device);border-radius:50%;background:transparent}.tile.pressed .plate-disc{background:color-mix(in srgb,var(--device) 20%,transparent);box-shadow:inset 0 0 0 3px #fff8}.gate-frame{position:absolute;inset:3%;border:3px solid var(--device);border-radius:2px}.tile.gate-closed .gate-frame{background:repeating-linear-gradient(90deg,var(--device) 0 4px,#efe6d5 4px 10px)}.tile.gate-open .gate-frame{border-style:dashed;background:color-mix(in srgb,var(--device) 9%,transparent)}.device-label{position:absolute;right:1px;top:0;font-size:12px;font-weight:bold;line-height:16px;padding:0 3px;z-index:4;background:#fffdf2;border-radius:2px;color:var(--device)}.piece{position:absolute;z-index:2}.player{width:48%;height:48%;border-radius:50%;background:var(--warm);border:2px solid #fff6e7;box-shadow:0 2px 3px #0003}.mirror .player{background:var(--cool)}.box{width:64%;height:64%;background:#c2985d;border:2px solid #73532c;border-radius:4px;box-shadow:inset 0 0 0 3px #dfbb7c,0 2px 2px #0002}.box.on-goal{background:#4c8265;border-color:#2d5940;box-shadow:inset 0 0 0 3px #a6c8ac}.box.on-goal::after{content:'✓';display:block;text-align:center;color:white;font-size:calc(var(--tile)*.38);line-height:calc(var(--tile)*.54)}.board-feedback{margin-top:13px;height:20px;font-size:14px;color:var(--muted)}.legend{display:flex;justify-content:center;gap:12px 20px;flex-wrap:wrap;padding:12px;font-size:14px;color:var(--muted);border-bottom:1px solid #c1b5a460}.legend>span{display:flex;align-items:center;gap:7px}.legend i{display:inline-block;width:15px;height:15px}.legend-player{background:var(--warm);border-radius:50%}.legend-box{background:#c2985d;border:2px solid #73532c;border-radius:2px}.legend-goal{border:2px solid #aa9171;border-radius:50%}.gate-status{display:flex;justify-content:center;gap:8px 20px;flex-wrap:wrap;padding:12px 16px 0;font-size:14px}.gate-line{display:flex;align-items:center;flex-wrap:wrap;gap:7px}.gate-badge{background:var(--gate-a);color:white;padding:2px 6px;border-radius:3px;font-weight:bold}.gate-line[data-id=b] .gate-badge{background:var(--gate-b)}.gate-line .open-label{color:#24613f;font-weight:600}.message{min-height:48px;padding:12px 20px;font-size:16px;line-height:1.5;text-align:center}.win{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#dcebdc;border-top:1px solid #91b597;padding:14px 24px;color:#244f35;font-size:16px}.controls{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px 20px;margin-top:18px}.action-buttons{display:flex;gap:8px;flex-wrap:wrap}.action-buttons button{font-size:14px}kbd{font:inherit;font-size:12px;color:var(--muted);margin-left:5px}.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,42px);gap:5px}.dpad button{font-size:23px;padding:0;min-height:42px}.dpad [data-direction=U]{grid-column:2}.dpad [data-direction=L]{grid-row:2;grid-column:1}.dpad [data-direction=D]{grid-row:2;grid-column:2}.dpad [data-direction=R]{grid-row:2;grid-column:3}.keyboard-tip{font-size:14px;color:var(--muted);grid-column:1/-1}.help{margin-top:22px;border-top:1px solid var(--border);padding-top:14px;font-size:16px;line-height:1.7}.help summary{cursor:pointer}.help p{margin-top:10px;max-width:850px;color:var(--muted)}footer{margin-top:20px;font-size:12px;line-height:1.7;color:var(--muted)}footer span{display:block}@media(max-width:850px){:root{--tile:38px}main{padding:18px}.board-wrap{min-height:220px}}@media(max-width:640px){:root{--tile:36px}main{padding:14px 10px 24px}h1{font-size:26px}.back-link{max-width:90px;text-align:right}.level-heading{padding:16px;gap:10px}.level-heading h2{font-size:20px}.level-heading p{font-size:14px}.mapping{gap:5px}#level-nav{gap:6px}#level-nav button{flex:1 1 28%;padding:9px 6px;text-align:center}.boards{grid-template-columns:1fr;background:none}.board-panel{background:#f1e2d7;padding:12px}.board-panel.mirror{background:#dce9ee}.board-panel:first-child{border-right:none;border-bottom:1px solid var(--border)}.board-caption{max-width:300px}.board-wrap{min-height:0}.board-feedback{margin-top:8px;height:18px}.legend{gap:8px 14px;font-size:12px}.gate-status{justify-content:flex-start}.controls{grid-template-columns:1fr}.dpad{justify-self:center;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,44px)}.action-buttons{justify-content:center}.keyboard-tip{text-align:center}.win{padding:12px;flex-wrap:wrap}.message{font-size:14px;padding:12px}.steps strong{font-size:26px}}@media(prefers-reduced-motion:no-preference){.piece{animation:appear .1s ease-out}@keyframes appear{from{transform:scale(.92)}to{transform:scale(1)}}}
+
+    .board-wrap{width:100%;container-type:inline-size}
+    .board{--tile:min(48px,calc((100cqw - 4px)/var(--cols) - 2px))}
+    #level-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+    #level-nav button{white-space:normal}
+    .gate-entry-arrow{position:absolute;left:2px;bottom:0;z-index:4;color:#302c28;background:#fff9e8;border-radius:2px;font-size:20px;line-height:22px;padding:0 3px}
+    body.chapter-embedded{background:transparent}
+    body.chapter-embedded main{max-width:none;padding:0 0 20px}
+    body.chapter-embedded .play-header{display:none}
+    .level-range{display:flex;align-items:center;gap:12px;padding-top:14px;font-size:14px}
+    #level-range{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--border);border-radius:6px;min-height:44px;padding:8px 12px}
+    @media(max-width:850px){.board{--tile:min(38px,calc((100cqw - 4px)/var(--cols) - 2px))}}
+    @media(max-width:640px){.board{--tile:min(36px,calc((100cqw - 4px)/var(--cols) - 2px))}#level-nav{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="play-header">
+      <div><p class="eyebrow">镜像推箱子 · 机制试验</p><h1>第九章 · 定向镜闸</h1></div>
+      <a class="back-link" href="./">返回原有关卡 ↗</a>
+    </header>
+    <label class="level-range">关卡分组 <select id="level-range" aria-label="选择关卡分组"></select></label>
+    <nav id="level-nav" aria-label="选择镜闸关卡"></nav>
+    <section class="play-surface" aria-labelledby="level-title">
+      <div class="level-heading"><div><h2 id="level-title"></h2><p id="premise"></p></div><div class="steps"><strong id="step-count">0</strong><span>步</span></div></div>
+      <div class="mapping"><strong id="mapping-name"></strong><span id="mapping-directions"></span></div>
+      <div id="boards" class="boards"></div>
+      <div class="legend"><span><i class="legend-player"></i>玩家</span><span><i class="legend-box"></i>箱子</span><span><i class="legend-goal"></i>目标</span><span>圆形 A / B：压板</span><span>方形 A / B：镜闸</span></div>
+      <div id="gate-status" class="gate-status" aria-label="跨界压板与镜闸状态"></div>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+      <div id="win" class="win" hidden><span id="win-text"></span><button id="next-level" class="primary">下一关 →</button></div>
+    </section>
+    <section class="controls" aria-label="游戏操作">
+      <div class="action-buttons"><button id="undo">撤销 <kbd>Z</kbd></button><button id="restart">重开 <kbd>R</kbd></button><button id="demo" style="display:none">从头演示</button><button id="demo-step">逐步演示</button></div>
+      <div class="dpad" aria-label="方向控制"><button data-direction="U" aria-label="向上">↑</button><button data-direction="L" aria-label="向左">←</button><button data-direction="D" aria-label="向下">↓</button><button data-direction="R" aria-label="向右">→</button></div>
+      <p class="keyboard-tip">方向键 / WASD 移动 · 也可点击方向按钮</p>
+    </section>
+    <details class="help"><summary>定向镜闸怎么玩？</summary><div>
+      <p>把两界的所有箱子推到圆点目标上。箱子只能推，不能拉；一边撞墙时，另一边仍然可以走。</p>
+      <p>门开启后，人物或箱子也只能沿箭头方向进入门格。箭头表示本界的移动方向，不是键盘方向。同字母压板与门跨界相连。玩家或箱子压住圆形 A，另一界的方形 A 门就会打开。压板上的物体仍可移动，你需要借墙停步，或者让箱子留下守板。</p>
+      <p>踩板后，从下一次输入起才能过门。离开压板的这一步，另一界仍能利用原来的开门状态；门里有人或箱子时暂缓关闭，腾空后再关。</p>
+      <p>演示会从本关起点开始；暂停后可逐步播放。手动移动会接管局面，重新点演示则从头开始。卡住时随时撤销或重开。</p>
+    </div></details>
+    <footer>本章为 CG-3 定向镜闸关卡。<span id="source-note"></span></footer>
+  </main>
+  <noscript>请启用浏览器 JavaScript 后试玩。</noscript>
+  <script>// Experimental CG-3 rules: conjugate gates with mapping-sensitive local entry directions.
+const DIRS = ['U', 'D', 'L', 'R'];
+const vectors = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+const maps = {
+  vertical: [0, 1, 3, 2],
+  slash: [3, 2, 0, 1],
+  backslash: [2, 3, 1, 0],
+  identity: [0, 1, 2, 3],
+};
+
+function makeBoard(rows) {
+  const width = Math.max(...rows.map(row => row.length));
+  const floor = new Set();
+  const goals = new Set();
+  const boxes = [];
+  let player;
+  rows.forEach((row, y) => [...row].forEach((cell, x) => {
+    if (!' .@$*+'.includes(cell)) return;
+    const pos = y * width + x;
+    floor.add(pos);
+    if ('.*+'.includes(cell)) goals.add(pos);
+    if ('$*'.includes(cell)) boxes.push(pos);
+    if ('@+'.includes(cell)) player = pos;
+  }));
+  if (player === undefined || boxes.length !== goals.size) throw Error('Bad board');
+  const neighbors = new Map([...floor].map(pos => [pos, vectors.map(([dx, dy]) => {
+    const x = pos % width + dx;
+    const y = Math.floor(pos / width) + dy;
+    const next = y * width + x;
+    return x >= 0 && x < width && y >= 0 && y < rows.length && floor.has(next) ? next : -1;
+  })]));
+  return { width, floor, goals, neighbors, initial: [player, ...boxes.sort((a, b) => a - b)] };
+}
+
+function point(endpoint, boards) {
+  return { side: endpoint.side, pos: endpoint.y * boards[endpoint.side].width + endpoint.x };
+}
+
+function compile(level) {
+  const boards = level.boards.map(makeBoard);
+  const links = level.links.map(link => ({
+    id: link.id,
+    plate: point(link.plate, boards),
+    gate: point(link.gate, boards),
+    // Direction is the physical local entry vector at the gate; mapping only changes the command that supplies it.
+    direction: DIRS.indexOf(link.direction),
+  }));
+  for (const link of links) {
+    if (link.direction < 0) throw Error(`Bad direction for link ${link.id}`);
+    if (link.plate.side === link.gate.side) throw Error('Gate must be cross-world');
+    for (const endpoint of [link.plate, link.gate]) {
+      if (!boards[endpoint.side].floor.has(endpoint.pos)) throw Error('Device off floor');
+    }
+  }
+  return { boards, links, mapping: maps[level.mapping], mappingName: level.mapping, initial: boards.map(board => board.initial) };
+}
+
+const key = state => state.map(board => board.join(',')).join('|');
+const occupied = (state, endpoint, include = 'all') => {
+  const values = state[endpoint.side];
+  if (include !== 'box' && values[0] === endpoint.pos) return true;
+  return include !== 'player' && values.slice(1).includes(endpoint.pos);
+};
+
+function openGates(compiled, state, mode = 'normal') {
+  return compiled.links.map(link => {
+    const selected = typeof mode === 'object' ? mode[link.id] ?? 'normal' : mode;
+    if (selected === 'closed') return false;
+    if (selected === 'open') return true;
+    return occupied(state, link.plate) || occupied(state, link.gate);
+  });
+}
+
+function gateAt(compiled, side, pos) {
+  return compiled.links.findIndex(link => link.gate.side === side && link.gate.pos === pos);
+}
+
+function canEnterGate(compiled, state, side, next, localDirection, opens, mode) {
+  const linkIndex = gateAt(compiled, side, next);
+  if (linkIndex < 0) return true;
+  const link = compiled.links[linkIndex];
+  const unrestricted = mode === 'undirected' || (typeof mode === 'object' && mode[link.id] === 'undirected');
+  return opens[linkIndex] && (unrestricted || localDirection === link.direction);
+}
+
+function settleBoard(compiled, state, side, command, opens, mode) {
+  const boardState = state[side];
+  const board = compiled.boards[side];
+  const localDirection = side === 0 ? command : compiled.mapping[command];
+  const next = board.neighbors.get(boardState[0])?.[localDirection] ?? -1;
+  const blocked = pos => pos < 0 || !canEnterGate(compiled, state, side, pos, localDirection, opens, mode);
+  if (blocked(next)) return [...boardState];
+  const boxIndex = boardState.indexOf(next, 1);
+  if (boxIndex < 0) return [next, ...boardState.slice(1)];
+  const beyond = board.neighbors.get(next)?.[localDirection] ?? -1;
+  if (blocked(beyond) || boardState.slice(1).includes(beyond)) return [...boardState];
+  const boxes = boardState.slice(1).map(pos => pos === next ? beyond : pos).sort((a, b) => a - b);
+  return [next, ...boxes];
+}
+
+function step(compiled, state, input, mode = 'normal') {
+  const command = typeof input === 'number' ? input : DIRS.indexOf(input);
+  if (command < 0 || command >= DIRS.length) throw Error(`Bad input: ${input}`);
+  const opens = openGates(compiled, state, mode);
+  return compiled.boards.map((_, side) => settleBoard(compiled, state, side, command, opens, mode));
+}
+
+const solved = (compiled, state) => state.every((values, side) => values.slice(1).every(pos => compiled.boards[side].goals.has(pos)));
+
+function solve(compiled, { mode = 'normal', maxStates = 300000, initial = compiled.initial } = {}) {
+  const states = [initial.map(board => [...board])];
+  const parents = [-1];
+  const moves = [''];
+  const seen = new Map([[key(states[0]), 0]]);
+  for (let head = 0; head < states.length; head++) {
+    const state = states[head];
+    if (solved(compiled, state)) {
+      const path = [];
+      for (let index = head; parents[index] >= 0; index = parents[index]) path.push(moves[index]);
+      return { status: 'EXACT_OPTIMAL', solution: path.reverse().join(''), states: states.length };
+    }
+    for (const input of DIRS) {
+      const next = step(compiled, state, input, mode);
+      const nextKey = key(next);
+      if (seen.has(nextKey)) continue;
+      if (states.length >= maxStates) return { status: 'CUTOFF', states: states.length };
+      seen.set(nextKey, states.length);
+      states.push(next);
+      parents.push(head);
+      moves.push(input);
+    }
+  }
+  return { status: 'UNSOLVABLE', states: states.length };
+}
+
+function trace(compiled, path, initial = compiled.initial) {
+  let state = initial.map(board => [...board]);
+  return [...path].map((input, index) => {
+    const command = DIRS.indexOf(input);
+    const opens = openGates(compiled, state);
+    const next = step(compiled, state, command);
+    const events = compiled.links.map((link, linkIndex) => {
+      const side = link.gate.side;
+      const localDirection = side === 0 ? command : compiled.mapping[command];
+      const gate = link.gate.pos;
+      const before = state[side];
+      const after = next[side];
+      const entered = after[0] === gate && before[0] !== gate;
+      const enteredBox = after.slice(1).includes(gate) && !before.slice(1).includes(gate);
+      const attempted = before[0] !== gate && (before[0] !== -1) && (() => {
+        const target = compiled.boards[side].neighbors.get(before[0])?.[localDirection] ?? -1;
+        return target === gate || (target >= 0 && before.slice(1).includes(target) && (compiled.boards[side].neighbors.get(target)?.[localDirection] ?? -1) === gate);
+      })();
+      return {
+        id: link.id,
+        open: opens[linkIndex],
+        localDirection: DIRS[localDirection],
+        allowedDirection: DIRS[link.direction],
+        directionalMatch: localDirection === link.direction,
+        entered: entered || enteredBox,
+        blockedWrongDirection: attempted && !entered && opens[linkIndex] && localDirection !== link.direction,
+        pressed: occupied(state, link.plate),
+      };
+    });
+    const row = { step: index + 1, input, before: state, after: next, events };
+    state = next;
+    return row;
+  });
+}
+
+
+class GateGame {
+  constructor(levels) { this.levels=levels; this.load(0); }
+  load(index) {
+    if(!Number.isInteger(index)||!this.levels[index])throw Error('Unknown level');
+    this.index=index; this.level=this.levels[index]; this.c=compile(this.level);
+    this.state=this.c.initial; this.history=[]; this.inputs=''; this.mode='play';
+    this.last=null; this.message='用方向键或下方按钮移动。两界会一起响应。';
+  }
+  get won() { return solved(this.c,this.state); }
+  move(direction, demo=false) {
+    if(!DIRS.includes(direction))throw Error('Unknown input');
+    if(this.won)return false;
+    if(!demo)this.mode='play';
+    const next=step(this.c,this.state,DIRS.indexOf(direction));
+    const stalled=next.map((a,i)=>key([a])===key([this.state[i]]));
+    this.last={direction,stalled};
+    if(key(next)===key(this.state)) {this.message='两界都被挡住了，步数不增加。试试另一个方向。';return false;}
+    this.history.push({state:this.state,inputs:this.inputs,last:this.last});
+    this.state=next;this.inputs+=direction;
+    this.message=this.won?'所有箱子都已归位。':stalled[0]?'现实受阻，镜中继续行动。':stalled[1]?'镜中受阻，现实继续行动。':'两界都完成了这一步。';
+    return true;
+  }
+  undo() {
+    this.mode='play';const previous=this.history.pop();if(!previous)return false;
+    this.state=previous.state;this.inputs=previous.inputs;this.last=null;this.message='已撤销一步，压板与门也恢复到上一步。';return true;
+  }
+  reset() { this.load(this.index); }
+  demoStep() {
+    if(this.mode!=='demo') {this.reset();this.mode='demo';}
+    const u=this.level.solution[this.inputs.length];
+    return u?this.move(u,true):false;
+  }
+  gates() {
+    const opens=openGates(this.c,this.state);
+    return this.c.links.map((l,i)=>({...l,open:opens[i],pressed:occupied(this.state,l.plate),
+      holder:this.state[l.plate.side][0]===l.plate.pos?'玩家':this.state[l.plate.side].slice(1).includes(l.plate.pos)?'箱子':null}));
+  }
+  progress(side) {
+    const board=this.c.boards[side];return {done:this.state[side].slice(1).filter(p=>board.goals.has(p)).length,total:board.goals.size};
+  }
+}
+
+const LEVELS=[{"id":"C9-01","title":"棒棒糖门颈","teaching":"固定方向识别","topology":"asymmetric-lollipop","mapping":"backslash","boards":[["########","#@##.  #","#      #","#   $  #","#  # ###","#      #","########"],["########","#    # #","#.     #","#   @  #","# $  # #","#      #","########"]],"links":[{"id":"a","plate":{"side":0,"x":4,"y":3},"gate":{"side":1,"x":3,"y":5},"direction":"D"}],"sources":[{"collection":"Algorithm-assisted CG-3 white-box","seed":93,"note":"Looped and offset rooms; retained only after a normal trace showed four wrong-direction stalls and one gate entry."}],"ruleVersion":"CG-3","solution":"","premise":"固定方向识别：先开门，再按箭头方向进入。","status":"SOLVED_REPLAYED","exact":false},{"id":"C9-02","title":"蝴蝶共享割点","teaching":"镜像侧有效方向","topology":"bow-tie-articulation","mapping":"vertical","boards":[["########","##    .#","##$  # #","##@    #","#     ##","#    # #","########"],["########","#   $.##","# #   ##","###  # #","#  @   #","##     #","########"]],"links":[{"id":"a","plate":{"side":0,"x":2,"y":1},"gate":{"side":1,"x":3,"y":2},"direction":"U"}],"sources":[{"collection":"Algorithm-assisted CG-3 white-box","seed":193,"note":"Two offset lobes with a shared articulation; retained after a normal trace showed a wrong-direction stall before the gate."}],"ruleVersion":"CG-3","solution":"","premise":"镜像侧有效方向：先开门，再按箭头方向进入。","status":"SOLVED_REPLAYED","exact":false},{"id":"C9-03","title":"偏置十字","teaching":"错误方向受阻","topology":"offset-cross","mapping":"slash","boards":[["########","#.   @ #","# $    #","#      #","##  #  #","## ### #","########"],["########","#.   $ #","#      #","##   ###","#@  ## #","#      #","########"]],"links":[{"id":"a","plate":{"side":0,"x":4,"y":2},"gate":{"side":1,"x":2,"y":4},"direction":"R"}],"sources":[{"collection":"Algorithm-assisted CG-3 white-box","seed":293,"note":"Offset cross branch; retained after slash mapping produced one wrong-direction stall and a successful gate entry."}],"ruleVersion":"CG-3","solution":"","premise":"错误方向受阻：先开门，再按箭头方向进入。","status":"SOLVED_REPLAYED","exact":false},{"id":"C9-04","title":"错位阶廊","teaching":"门前站位","topology":"offset-staggered-corridors","mapping":"slash","boards":[["########","#     ##","# # $###","# .    #","#@  ## #","##     #","########"],["########","# .#   #","#   $ @#","#   ## #","## # # #","#   #  #","########"]],"links":[{"id":"a","plate":{"side":0,"x":4,"y":5},"gate":{"side":1,"x":2,"y":3},"direction":"L"}],"sources":[{"collection":"Algorithm-assisted CG-3 white-box","seed":93,"note":"Staggered corridors; normal trace has one wrong-direction stall before the successful gate entry."}],"ruleVersion":"CG-3","solution":"","premise":"门前站位：先开门，再按箭头方向进入。","status":"SOLVED_REPLAYED","exact":false},{"id":"C9-05","title":"带弦回环","teaching":"转镜前预置","topology":"ring-with-chord","mapping":"backslash","boards":[["########","#@##.  #","#      #","#   $  #","#  # ###","#      #","########"],["########","#    # #","#.     #","#   @  #","# $  # #","#      #","########"]],"links":[{"id":"a","plate":{"side":0,"x":4,"y":3},"gate":{"side":1,"x":3,"y":5},"direction":"D"}],"sources":[{"collection":"Algorithm-assisted CG-3 white-box","seed":93,"note":"Ring with internal chord and asymmetric gate mouth; backslash mapping keeps a wrong-side approach in the optimal trace."}],"ruleVersion":"CG-3","solution":"","premise":"转镜前预置：先开门，再按箭头方向进入。","status":"SOLVED_REPLAYED","exact":false}];
+// Inlined with the verified engine and GateGame controller by the build script.
+const game=new GateGame(LEVELS);
+const $=id=>document.getElementById(id);
+const arrows={U:'↑',D:'↓',L:'←',R:'→'};
+const sideNames=['现实','镜中'];
+const premises=[
+  '你留在压板上，镜中的你才能向前。',
+  '先让人守板，再让箱子接班。',
+  '目标箱暂时留下值班，另一界还要借它绕路。',
+  '两界轮流开门，用完压板箱还要把它收回来。',
+  '这次镜中转了九十度，重新找出守板与过门的方向。',
+];
+let timer=null;
+const cleared=new Set();
+function pause(){if(timer!==null)clearInterval(timer);timer=null;}
+function renderBoard(side){
+  const board=game.c.boards[side],state=game.state[side],gateStates=game.gates();
+  const rows=game.level.boards[side],cells=[];
+  for(let y=0;y<rows.length;y++)for(let x=0;x<board.width;x++){
+    const pos=y*board.width+x,classes=['tile'];let inside='',label='地面';
+    if(!board.floor.has(pos)){classes.push('wall');label='墙';}
+    else {
+      if(board.goals.has(pos)){classes.push('goal');label='目标';}
+      for(const link of gateStates){
+        if(link.plate.side===side&&link.plate.pos===pos){classes.push(`device-${link.id}`,'plate');if(link.pressed)classes.push('pressed');inside+=`<span class="plate-disc"></span><span class="device-label">${link.id.toUpperCase()}</span>`;label+=`，压板 ${link.id.toUpperCase()}，${link.pressed?'已压住':'未压住'}`;}
+        if(link.gate.side===side&&link.gate.pos===pos){classes.push(`device-${link.id}`,link.open?'gate-open':'gate-closed');inside+=`<span class="gate-frame"></span><span class="device-label">${link.id.toUpperCase()}</span>`;label+=`，门 ${link.id.toUpperCase()}，${link.open?'开启':'关闭'}`;if(Number.isInteger(link.direction)){inside+=`<span class="gate-entry-arrow">${arrows[DIRS[link.direction]]}</span>`;label+=`，只能向${arrows[DIRS[link.direction]]}进入`;}}
+      }
+      if(state.slice(1).includes(pos)){inside+=`<span class="piece box${board.goals.has(pos)?' on-goal':''}"></span>`;label+='，箱子';}
+      if(state[0]===pos){inside+='<span class="piece player"></span>';label+='，玩家';}
+    }
+    cells.push(`<div class="${classes.join(' ')}" role="img" aria-label="${x+1}列${y+1}行，${label}">${inside}</div>`);
+  }
+  const progress=game.progress(side),last=game.last;
+  const dir=last?(side===0?last.direction:DIRS[game.c.mapping[DIRS.indexOf(last.direction)]]):null;
+  const feedback=last?`${arrows[dir]} ${last.stalled[side]?'受阻 · 原地保持':'移动'}`:'等待输入';
+  return `<section class="board-panel ${side===1?'mirror':'reality'}" aria-label="${sideNames[side]}盘面"><div class="board-caption"><h3>${sideNames[side]}</h3><span>${progress.total?`归位 ${progress.done} / ${progress.total}`:'守板者'}</span></div><div class="board-wrap"><div class="board" style="--cols:${board.width}">${cells.join('')}</div></div><div class="board-feedback">${feedback}</div></section>`;
+}
+function render(){
+  if(game.won){pause();if(game.mode==='play')cleared.add(game.index);}
+  $('level-range').value=String(Math.floor(game.index/10)*10);
+  [...$('level-nav').children].forEach((b,i)=>{b.hidden=Math.floor(i/10)!==Math.floor(game.index/10);b.setAttribute('aria-current',String(i===game.index));b.textContent=`${String(i+1).padStart(2,'0')}  ${game.levels[i].title}${cleared.has(i)?' ✓':''}`;});
+  $('level-title').textContent=game.level.title;
+  $('premise').textContent=game.level.premise||premises[game.index]||'让两界互相借门，再把守板的箱子收回目标。';
+  $('step-count').textContent=String(game.inputs.length);
+  $('mapping-name').textContent=({vertical:'平面镜 · 左右反转',slash:'斜镜',backslash:'反斜镜',identity:'同向映射'})[game.level.mapping];
+  $('mapping-directions').textContent=DIRS.map((d,i)=>arrows[d]+' '+arrows[DIRS[game.c.mapping[i]]]).join('　');
+  $('boards').innerHTML=renderBoard(0)+renderBoard(1);
+  $('gate-status').innerHTML=game.gates().map(g=>`<div class="gate-line" data-id="${g.id}"><span class="gate-badge">${g.id.toUpperCase()}</span><span>${sideNames[g.plate.side]}压板 · ${g.holder?g.holder+'压住':'空置'}</span><span>→</span><span class="${g.open?'open-label':''}">${sideNames[g.gate.side]}门 · ${g.pressed?'开启':g.open?'占位暂缓关闭':'关闭'}</span></div>`).join('');
+  $('message').textContent=game.mode==='demo'&&!game.won?`演示 ${game.inputs.length} / ${game.level.solution.length} 步 · ${game.message}`:game.message;
+  $('undo').disabled=game.history.length===0;
+  $('demo').textContent=timer!==null?'暂停演示':game.mode==='demo'&&!game.won?'继续演示':'从头演示';
+  $('demo-step').textContent=game.mode==='demo'?'演示下一步':'逐步演示';
+  $('demo-step').disabled=game.mode==='demo'&&game.won;
+  $('win').hidden=!game.won;
+  $('win-text').textContent=game.mode==='demo'?`演示完成 · ${game.inputs.length} 步。可以重开自己试试。`:`过关！用了 ${game.inputs.length} 步。`;
+  $('next-level').textContent=game.index<LEVELS.length-1?'下一关 →':'回到第一关';
+  document.querySelectorAll('[data-direction]').forEach(b=>b.disabled=game.won);
+  const classic=(game.level.sources||[]).filter(s=>s.collection==='Microban').map(s=>`#${s.level}`);
+  $('source-note').textContent=classic.length?`本关改编自 Microban ${[...new Set(classic)].join('、')}：加入跨界镜闸并删减地面，不是原题。`:'本关为项目原创微型练习。';
+}
+function chooseLevel(i){pause();game.load(i);history.replaceState(null,'',`#${game.level.id}`);render();}
+LEVELS.forEach((l,i)=>{const b=document.createElement('button');b.type='button';b.addEventListener('click',()=>chooseLevel(i));$('level-nav').append(b);});
+for(let i=0;i<LEVELS.length;i+=10){const option=document.createElement('option');option.value=String(i);option.textContent=`第 ${i+1}～${Math.min(i+10,LEVELS.length)} 关`;$('level-range').append(option);}
+$('level-range').addEventListener('change',e=>chooseLevel(Number(e.target.value)));
+function manual(direction){pause();game.move(direction);render();}
+document.querySelectorAll('[data-direction]').forEach(b=>b.addEventListener('click',()=>manual(b.dataset.direction)));
+$('undo').addEventListener('click',()=>{pause();game.undo();render();});
+$('restart').addEventListener('click',()=>{pause();game.reset();render();});
+$('demo-step').addEventListener('click',()=>{pause();game.demoStep();render();});
+$('demo').addEventListener('click',()=>{
+  if(timer!==null){pause();render();return;}
+  if(game.mode!=='demo'||game.won){game.reset();game.mode='demo';}
+  timer=setInterval(()=>{game.demoStep();render();},650);render();
+});
+$('next-level').addEventListener('click',()=>chooseLevel((game.index+1)%LEVELS.length));
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.target.isContentEditable)return;
+  const direction={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',w:'U',s:'D',a:'L',d:'R'}[e.key]||{W:'U',S:'D',A:'L',D:'R'}[e.key];
+  if(direction){e.preventDefault();manual(direction);}
+  else if(e.key.toLowerCase()==='z'){e.preventDefault();pause();game.undo();render();}
+  else if(e.key.toLowerCase()==='r'){e.preventDefault();pause();game.reset();render();}
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();render();}});
+if(location.protocol==='file:')document.querySelector('.back-link').hidden=true;
+const initialIndex=LEVELS.findIndex(l=>`#${l.id}`===location.hash);
+if(initialIndex>=0)game.load(initialIndex);
+window.addEventListener('hashchange',()=>{const i=LEVELS.findIndex(l=>`#${l.id}`===location.hash);if(i>=0&&i!==game.index){pause();game.load(i);render();}});
+render();
+if(new URLSearchParams(location.search).get('embed')==='chapter7'&&window.parent!==window){
+  document.body.classList.add('chapter-embedded');
+  const main=document.querySelector('main');
+  const reportHeight=()=>window.parent.postMessage({type:'mirror-gates:height',height:main.offsetHeight+2},location.origin);
+  window.addEventListener('message',event=>{if(event.source===window.parent&&event.origin===location.origin&&event.data?.type==='mirror-gates:measure')reportHeight();});
+  new ResizeObserver(reportHeight).observe(main);
+  reportHeight();
+}
+</script>
+</body>
+</html>

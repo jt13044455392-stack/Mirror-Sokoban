@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>机制试验 · 偏振矢量叠加与多机制协同体系 (Vector Superposition & Multi-Mechanism Synthesis)</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --board-a-bg: #fffbf5;
+      --board-a-border: #fed7aa;
+      --board-b-bg: #f0f9ff;
+      --board-b-border: #bae6fd;
+      --wall-color: #1e293b;
+      --floor-color: #ffffff;
+      --player-color: #ffffff;
+      --player-border: #0ea5e9;
+
+      --gate-red-border: #ef4444;
+      --gate-blue-border: #3b82f6;
+      --gate-purple-border: #a855f7;
+
+      --box-neutral: #d97706;
+      --box-red: #ef4444;
+      --box-blue: #3b82f6;
+      --box-purple: #a855f7;
+      --goal-color: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px 14px 40px;
+    }
+
+    body.embedded {
+      padding: 6px 8px 20px;
+    }
+
+    body.embedded header {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    body.embedded header .header-text {
+      display: none;
+    }
+
+    body.embedded .vector-compass-hud {
+      margin-top: 0;
+      margin-bottom: 6px;
+      padding: 6px 14px;
+    }
+
+    header {
+      text-align: center;
+      max-width: 980px;
+      width: 100%;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .header-text {
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .rule-summary {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.5;
+    }
+
+    .rule-tag {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      margin: 0 2px;
+    }
+    .tag-red { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+    .tag-blue { background: #dbeafe; color: #1d4ed8; border: 1px solid #60a5fa; }
+    .tag-purple { background: #f3e8ff; color: #7e22ce; border: 1px solid #c084fc; }
+
+    /* Vector Compass HUD Card */
+    .vector-compass-hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(203, 213, 225, 0.85);
+      border-radius: 12px;
+      padding: 8px 18px;
+      margin: 8px auto 0;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+      max-width: 980px;
+      width: 100%;
+      user-select: none;
+    }
+
+    .compass-chips-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .compass-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+      opacity: 0.55;
+      filter: grayscale(0.4);
+    }
+
+    .compass-chip.active {
+      opacity: 1;
+      filter: grayscale(0);
+      transform: translateY(-1px);
+    }
+
+    .compass-chip .chip-symbol {
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .compass-chip.chip-red {
+      background: linear-gradient(135deg, rgba(254, 226, 226, 0.85) 0%, rgba(254, 202, 202, 0.98) 100%);
+      color: #b91c1c;
+      border: 1px solid #f87171;
+    }
+    .compass-chip.chip-red.active {
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
+    }
+
+    .compass-chip.chip-blue {
+      background: linear-gradient(135deg, rgba(219, 234, 254, 0.85) 0%, rgba(191, 219, 254, 0.98) 100%);
+      color: #1d4ed8;
+      border: 1px solid #60a5fa;
+    }
+    .compass-chip.chip-blue.active {
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.45);
+    }
+
+    .compass-chip.chip-purple {
+      background: linear-gradient(135deg, rgba(243, 232, 255, 0.9) 0%, rgba(233, 213, 255, 1) 100%);
+      color: #6b21a8;
+      border: 1.5px solid #fbbf24;
+    }
+    .compass-chip.chip-purple .chip-star {
+      color: #f59e0b;
+      font-size: 13px;
+      display: inline-block;
+      animation: star-glow 1.5s infinite alternate;
+    }
+    .compass-chip.chip-purple.active {
+      box-shadow: 0 0 14px rgba(168, 85, 247, 0.55), 0 0 8px rgba(245, 158, 11, 0.85);
+    }
+
+    .compass-equilibrium {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(241, 245, 249, 0.85);
+      border: 1px dashed #94a3b8;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      opacity: 0.65;
+    }
+    .compass-equilibrium.active {
+      opacity: 1;
+      border-color: #a855f7;
+      background: #faf5ff;
+      color: #7e22ce;
+      box-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
+    }
+    .compass-equilibrium .eq-symbol {
+      font-size: 18px;
+      font-weight: 900;
+      color: #7e22ce;
+    }
+
+    @keyframes star-glow {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      100% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 4px #f59e0b); }
+    }
+
+    @keyframes chip-pulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.16); box-shadow: 0 0 18px rgba(168, 85, 247, 0.8), 0 0 12px #fbbf24; }
+      100% { transform: scale(1); }
+    }
+    .compass-chip.chip-purple.pulse {
+      animation: chip-pulse 0.45s ease-out;
+    }
+
+    .compass-op {
+      font-size: 15px;
+      font-weight: 800;
+      color: #94a3b8;
+    }
+
+    .compass-diagram {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(248, 250, 252, 0.9);
+      padding: 4px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .compass-formula {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 720px) {
+      .vector-compass-hud {
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 12px;
+      }
+      .compass-chips-group {
+        justify-content: center;
+      }
+    }
+
+    /* 4-Tab Segmented Level Navigation */
+    .tabs-container {
+      display: flex;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+      max-width: 980px;
+      width: 100%;
+      margin-bottom: 8px;
+      user-select: none;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .scheme-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 10px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .scheme-tab:hover {
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .scheme-tab.active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    .scheme-tab[data-scheme="A"].active {
+      border-bottom: 2.5px solid #ef4444;
+      color: #b91c1c;
+    }
+    .scheme-tab[data-scheme="B"].active {
+      border-bottom: 2.5px solid #3b82f6;
+      color: #1d4ed8;
+    }
+    .scheme-tab[data-scheme="C"].active {
+      border-bottom: 2.5px solid #eab308;
+      color: #a16207;
+    }
+    .scheme-tab[data-scheme="FUSION"].active {
+      border-bottom: 2.5px solid #a855f7;
+      color: #7e22ce;
+    }
+
+    .tab-count-badge {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: #e2e8f0;
+      color: #475569;
+      font-weight: 800;
+    }
+    .scheme-tab.active .tab-count-badge {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    /* Level Selector Bar */
+    .selector-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 980px;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .lvl-btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .lvl-btn:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+    .lvl-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+    }
+    .lvl-btn.active .step-badge {
+      color: #cbd5e1;
+    }
+
+    .tier-badge {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 3px;
+      line-height: 1.2;
+    }
+    .tier-badge.t1 { background: #dcfce7; color: #15803d; }
+    .tier-badge.t2 { background: #e0f2fe; color: #0369a1; }
+    .tier-badge.t3 { background: #fef9c3; color: #854d0e; }
+    .tier-badge.t4 { background: #f3e8ff; color: #7e22ce; }
+
+    .lvl-btn.active .tier-badge.t1 { background: #166534; color: #bbf7d0; }
+    .lvl-btn.active .tier-badge.t2 { background: #075985; color: #bae6fd; }
+    .lvl-btn.active .tier-badge.t3 { background: #713f12; color: #fef08a; }
+    .lvl-btn.active .tier-badge.t4 { background: #581c87; color: #e9d5ff; }
+
+    .step-badge {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 500;
+      margin-left: 2px;
+    }
+
+    /* Main Board Panel */
+    .main-panel {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      padding: 16px;
+      max-width: 980px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .level-meta {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .level-title-box h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .level-goal-text {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 3px;
+    }
+
+    .boards-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: flex-start;
+      margin: 6px 0 14px;
+      flex-wrap: wrap;
+    }
+
+    .board-card {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--board-a-border);
+      background: var(--board-a-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .board-card.mirror {
+      border-color: var(--board-b-border);
+      background: var(--board-b-bg);
+    }
+
+    .board-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 2px;
+      background: #cbd5e1;
+      padding: 2px;
+      border-radius: 4px;
+    }
+
+    .cell {
+      width: 38px;
+      height: 38px;
+      background: var(--floor-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-weight: 700;
+      user-select: none;
+      border-radius: 2px;
+      overflow: visible;
+    }
+
+    .cell.wall {
+      background: var(--wall-color);
+    }
+
+    .cell.void {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
+    .cell.goal::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--goal-color);
+      position: absolute;
+      opacity: 0.8;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+      z-index: 1;
+    }
+
+    /* Laser Polarization Gates */
+    .cell.gate-r {
+      background: repeating-linear-gradient(
+        135deg,
+        rgba(239, 68, 68, 0.28) 0px,
+        rgba(239, 68, 68, 0.28) 2px,
+        rgba(254, 226, 226, 0.38) 2px,
+        rgba(254, 226, 226, 0.38) 7px
+      );
+      border: 1.5px dashed rgba(239, 68, 68, 0.85);
+      box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.2);
+    }
+    .cell.gate-r::after {
+      content: '↙';
+      position: absolute;
+      font-size: 16px;
+      font-weight: 900;
+      color: #dc2626;
+      opacity: 0.45;
+      pointer-events: none;
+      text-shadow: 0 0 3px rgba(239, 68, 68, 0.7);
+      z-index: 2;
+    }
+
+    .cell.gate-b {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(59, 130, 246, 0.28) 0px,
+        rgba(59, 130, 246, 0.28) 2px,
+        rgba(219, 234, 254, 0.38) 2px,
+        rgba(219, 234, 254, 0.38) 7px
+      );
+      border: 1.5px dashed rgba(59, 130, 246, 0.85);
+      box-shadow: inset 0 0 8px rgba(59, 130, 246, 0.2);
+    }
+    .cell.gate-b::after {
+      content: '↘';
+      position: absolute;
+      font-size: 16px;
+      font-weight: 900;
+      color: #2563eb;
+      opacity: 0.45;
+      pointer-events: none;
+      text-shadow: 0 0 3px rgba(59, 130, 246, 0.7);
+      z-index: 2;
+    }
+
+    .cell.gate-p {
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(168, 85, 247, 0.32) 0px,
+        rgba(168, 85, 247, 0.32) 2px,
+        rgba(243, 232, 255, 0.42) 2px,
+        rgba(243, 232, 255, 0.42) 7px
+      );
+      border: 1.5px solid rgba(168, 85, 247, 0.85);
+      box-shadow: inset 0 0 10px rgba(168, 85, 247, 0.3), 0 0 6px rgba(168, 85, 247, 0.25);
+    }
+    .cell.gate-p::after {
+      content: '↓';
+      position: absolute;
+      font-size: 17px;
+      font-weight: 900;
+      color: #7e22ce;
+      opacity: 0.6;
+      pointer-events: none;
+      text-shadow: 0 0 4px #fbbf24;
+      z-index: 2;
+    }
+
+    /* Inter-World Conduit Shimmer / Vortex ('c') */
+    .cell.conduit {
+      background: radial-gradient(circle at center, rgba(168, 85, 247, 0.4) 0%, rgba(99, 102, 241, 0.25) 50%, rgba(30, 41, 59, 0.1) 100%);
+      border: 1.5px dashed #a855f7;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 10px rgba(168, 85, 247, 0.35);
+    }
+    .cell.conduit::before {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, transparent 0deg, rgba(168, 85, 247, 0.75) 120deg, rgba(59, 130, 246, 0.75) 240deg, transparent 360deg);
+      animation: conduit-spin 3s linear infinite;
+      opacity: 0.85;
+    }
+    .cell.conduit::after {
+      content: '🌀';
+      position: absolute;
+      font-size: 14px;
+      z-index: 2;
+      filter: drop-shadow(0 0 4px #c084fc);
+      animation: conduit-pulse 2s ease-in-out infinite alternate;
+    }
+    @keyframes conduit-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes conduit-pulse {
+      from { transform: scale(0.85); opacity: 0.7; }
+      to { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 6px #60a5fa); }
+    }
+
+    /* Crystal Prism Tile ('^' / '▲') */
+    .cell.prism {
+      background: radial-gradient(circle at center, rgba(254, 240, 138, 0.35) 0%, rgba(243, 232, 255, 0.4) 60%, rgba(224, 231, 255, 0.2) 100%);
+      border: 1.5px solid #ca8a04;
+      box-shadow: inset 0 0 8px rgba(250, 204, 21, 0.35);
+      position: relative;
+      overflow: visible;
+    }
+    .prism-svg-container {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Player Entity */
+    .entity-player {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--player-color);
+      border: 3px solid var(--player-border);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+      z-index: 5;
+    }
+
+    /* Vector Box Aesthetics: Crystal Glass with SVG glowing arrows */
+    .entity-box {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 4;
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+      user-select: none;
+    }
+
+    .entity-box.red {
+      background: linear-gradient(135deg, rgba(248, 113, 113, 0.55) 0%, rgba(220, 38, 38, 0.85) 100%);
+      border: 1.5px solid rgba(254, 202, 202, 0.95);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4), inset 0 0 6px rgba(255, 255, 255, 0.6);
+    }
+
+    .entity-box.blue {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.55) 0%, rgba(37, 99, 235, 0.85) 100%);
+      border: 1.5px solid rgba(191, 219, 254, 0.95);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4), inset 0 0 6px rgba(255, 255, 255, 0.6);
+    }
+
+    .entity-box.purple {
+      background: linear-gradient(135deg, rgba(192, 132, 252, 0.65) 0%, rgba(147, 51, 234, 0.95) 100%);
+      border: 1.5px solid #fde047;
+      box-shadow: 
+        0 0 14px rgba(168, 85, 247, 0.75),
+        0 0 6px rgba(245, 158, 11, 0.9),
+        inset 0 1px 2px rgba(254, 240, 138, 0.85);
+    }
+
+    .entity-box.neutral {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.5) 0%, rgba(217, 119, 6, 0.82) 100%);
+      border: 1.5px solid rgba(253, 230, 138, 0.9);
+      box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3), inset 0 0 6px rgba(255, 255, 255, 0.6);
+      font-weight: 800;
+      font-size: 14px;
+      color: #ffffff;
+    }
+
+    .entity-box.on-goal {
+      outline: 2.5px solid #10b981;
+      outline-offset: 1px;
+    }
+
+    .box-vector-svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Collision Synthesis Feedback Animations */
+    @keyframes synth-squash {
+      0% {
+        transform: scale(0.65, 1.45);
+        filter: brightness(2.6) drop-shadow(0 0 20px #fbbf24);
+      }
+      35% {
+        transform: scale(1.4, 0.65);
+        filter: brightness(2.0) drop-shadow(0 0 16px #a855f7);
+      }
+      65% {
+        transform: scale(0.9, 1.15);
+        filter: brightness(1.4) drop-shadow(0 0 10px #fbbf24);
+      }
+      100% {
+        transform: scale(1, 1);
+        filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.7));
+      }
+    }
+    .entity-box.purple.just-synthesized {
+      animation: synth-squash 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes synth-shockwave {
+      0% {
+        transform: scale(0.2);
+        opacity: 1;
+        border-color: #fbbf24;
+        box-shadow: 0 0 10px #fbbf24, 0 0 20px #a855f7;
+      }
+      50% {
+        opacity: 0.9;
+        border-color: #fde047;
+      }
+      100% {
+        transform: scale(2.4);
+        opacity: 0;
+        border-color: #a855f7;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0);
+      }
+    }
+    .synth-shockwave {
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 3px solid #fbbf24;
+      pointer-events: none;
+      z-index: 10;
+      animation: synth-shockwave 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    @keyframes synth-particle-implode {
+      0% {
+        transform: translate(var(--tx), var(--ty)) scale(1.3);
+        opacity: 1;
+      }
+      65% {
+        transform: translate(calc(var(--tx) * 0.25), calc(var(--ty) * 0.25)) scale(0.9);
+        opacity: 0.95;
+      }
+      100% {
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+      }
+    }
+    .synth-particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 11;
+      animation: synth-particle-implode 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .synth-particle.p-red {
+      background: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+    .synth-particle.p-blue {
+      background: #3b82f6;
+      box-shadow: 0 0 6px #3b82f6;
+    }
+    .synth-particle.p-gold {
+      background: #fbbf24;
+      box-shadow: 0 0 8px #fbbf24;
+    }
+
+    /* Prism Dispersion Bifurcation Flash */
+    @keyframes dispersion-flash {
+      0% { transform: scale(0.8); opacity: 0.9; filter: brightness(2.5); }
+      50% { transform: scale(1.8); opacity: 0.7; filter: drop-shadow(0 0 12px #ca8a04); }
+      100% { transform: scale(2.6); opacity: 0; }
+    }
+    .dispersion-shockwave {
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      border-radius: 6px;
+      border: 2px solid #ca8a04;
+      pointer-events: none;
+      z-index: 10;
+      animation: dispersion-flash 0.4s ease-out forwards;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 6px;
+    }
+
+    .ctrl-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .ctrl-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+    .ctrl-btn.primary {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
+    .ctrl-btn.primary:hover {
+      background: #1d4ed8;
+    }
+
+    .toast-msg {
+      min-height: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 6px 0;
+      text-align: center;
+      color: #0284c7;
+    }
+
+    .solved-banner {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 12px;
+      z-index: 20;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+    .solved-banner h3 { font-size: 24px; margin-bottom: 8px; }
+    .solved-banner p { font-size: 14px; opacity: 0.92; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-text">
+      <h1>机制试验 · 偏振矢量叠加与多机制协同体系 (Vector Superposition & Synthesis)</h1>
+      <p class="rule-summary">
+        单一同步输入 · 偏振滤波 · 跨界虫洞对撞 · 棱镜分光呼吸 · 
+        <span class="rule-tag tag-red">红光栅 (r)</span> 仅通 ↙ 红箱 · 
+        <span class="rule-tag tag-blue">蓝光栅 (b)</span> 仅通 ↘ 蓝箱 · 
+        <span class="rule-tag tag-purple">紫光栅 (p)</span> 仅通 ↓ 紫箱 · 
+        双向守恒：<span class="rule-tag tag-purple">↓ 紫箱</span> ⇌ <span class="rule-tag tag-red">↙ 红箱</span> ⊕ <span class="rule-tag tag-blue">↘ 蓝箱</span>
+      </p>
+    </div>
+
+    <!-- Vector Compass HUD Card -->
+    <div class="vector-compass-hud" id="vectorCompassHud">
+      <div class="compass-chips-group">
+        <div class="compass-chip chip-purple active" id="hudChipPurple" title="复合超叠加矢量: ↓ 正南 (0, 2)">
+          <span class="chip-symbol">↓</span>
+          <span class="chip-text">紫晶复合 <b>Purple</b></span>
+          <span class="chip-star">✦</span>
+        </div>
+
+        <div class="compass-equilibrium active" id="hudEquilibrium" title="双向拓扑可逆性: 对撞合成 ⇌ 棱镜分光">
+          <span class="eq-symbol">⇌</span>
+          <span style="font-size: 11px; font-weight: 700;">合成 ⇌ 分光</span>
+        </div>
+
+        <div class="compass-chip chip-red active" id="hudChipRed" title="红偏振原色矢量: ↙ 西南 (-1, 1)">
+          <span class="chip-symbol">↙</span>
+          <span class="chip-text">红原色 <b>Red</b></span>
+        </div>
+        <span class="compass-op">+</span>
+        <div class="compass-chip chip-blue active" id="hudChipBlue" title="蓝偏振原色矢量: ↘ 东南 (1, 1)">
+          <span class="chip-symbol">↘</span>
+          <span class="chip-text">蓝原色 <b>Blue</b></span>
+        </div>
+      </div>
+
+      <div class="compass-diagram">
+        <svg class="compass-svg" viewBox="-24 -24 48 48" width="46" height="46">
+          <circle cx="0" cy="0" r="21" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="2 2" />
+          <line x1="-20" y1="0" x2="20" y2="0" stroke="#94a3b8" stroke-width="0.8" opacity="0.35" />
+          <line x1="0" y1="-20" x2="0" y2="20" stroke="#94a3b8" stroke-width="0.8" opacity="0.35" />
+          <line x1="-11" y1="11" x2="0" y2="22" stroke="#f87171" stroke-width="1" stroke-dasharray="2 2" opacity="0.6" />
+          <line x1="11" y1="11" x2="0" y2="22" stroke="#60a5fa" stroke-width="1" stroke-dasharray="2 2" opacity="0.6" />
+          <!-- Vector Red ↙: (-11, 11) -->
+          <line x1="0" y1="0" x2="-11" y2="11" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" />
+          <polygon points="-11,11 -6,9 -9,6" fill="#ef4444" />
+          <!-- Vector Blue ↘: (11, 11) -->
+          <line x1="0" y1="0" x2="11" y2="11" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" />
+          <polygon points="11,11 6,9 9,6" fill="#3b82f6" />
+          <!-- Resultant Vector Purple ↓: (0, 22) -->
+          <line x1="0" y1="0" x2="0" y2="22" stroke="#a855f7" stroke-width="2.8" stroke-linecap="round" />
+          <polygon points="0,22 -3.5,16 3.5,16" fill="#fbbf24" stroke="#a855f7" stroke-width="0.5" />
+          <circle cx="0" cy="0" r="2.2" fill="#0f172a" />
+        </svg>
+        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+          <span style="font-size: 10px; color: #64748b; font-weight: 700;">双向矢量守恒</span>
+          <span class="compass-formula">↓ ⇌ ↙ + ↘</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 4-Tab Segmented Level Navigation -->
+  <div class="tabs-container" id="tabsContainer">
+    <button class="scheme-tab active" data-scheme="A" onclick="selectTab('A')">Scheme A [10] · 偏振与门栓</button>
+    <button class="scheme-tab" data-scheme="B" onclick="selectTab('B')">Scheme B [10] · 跨界虫洞碰撞</button>
+    <button class="scheme-tab" data-scheme="C" onclick="selectTab('C')">Scheme C [10] · 棱镜分光呼吸</button>
+    <button class="scheme-tab" data-scheme="FUSION" onclick="selectTab('FUSION')">Fusion [8] · 大师四象归一</button>
+  </div>
+
+  <div class="selector-bar" id="lvlSelector"></div>
+
+  <div class="main-panel">
+    <div class="solved-banner" id="solvedBanner">
+      <h3 id="solvedTitle">🎉 目标达成！SOLVED</h3>
+      <p id="solvedDesc">所有偏振光斑目标已完美归位</p>
+      <button class="ctrl-btn primary" onclick="nextLevel()">下一关 ➔</button>
+    </div>
+
+    <div class="level-meta">
+      <div class="level-title-box">
+        <h2 id="lvlTitle">关卡</h2>
+        <div class="level-goal-text" id="lvlGoal">设计目标</div>
+      </div>
+      <div style="font-size: 13px; color: var(--text-sub);">
+        步数: <b id="stepCounter" style="color: #0f172a;">0</b> / 参考解: <b id="refStepCounter">--</b>
+      </div>
+    </div>
+
+    <div class="toast-msg" id="msgToast"></div>
+
+    <div class="boards-container">
+      <div class="board-card">
+        <div class="board-card-title">现实界 · REALITY</div>
+        <div class="grid" id="grid0"></div>
+      </div>
+      <div class="board-card mirror">
+        <div class="board-card-title">镜中界 · MIRROR</div>
+        <div class="grid" id="grid1"></div>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <button class="ctrl-btn" onclick="undo()" title="快捷键: Z">↩ 撤销 (Z)</button>
+      <button class="ctrl-btn" onclick="reset()" title="快捷键: R">↺ 重置 (R)</button>
+      <button class="ctrl-btn primary" id="playBtn" onclick="togglePlay()">▶ 演示官方解 (Space)</button>
+      <button class="ctrl-btn" onclick="stepForward()">⏭ 单步前进</button>
+      <div style="display: flex; gap: 4px; align-items: center; margin-left: 8px;">
+        <span style="font-size: 12px; color: var(--text-sub);">倍速:</span>
+        <button class="ctrl-btn" style="padding: 4px 8px; font-size: 11px;" onclick="setSpeed(1)">1x</button>
+        <button class="ctrl-btn" style="padding: 4px 8px; font-size: 11px;" onclick="setSpeed(2)">2x</button>
+        <button class="ctrl-btn" style="padding: 4px 8px; font-size: 11px;" onclick="setSpeed(4)">4x</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DATASET = {"version":"2.0.0","generatedAt":"2026-09-11T12:07:13.885Z","ruleVersion":"CG-COLOR-SYNTH-1","count":38,"levels":[{"id":"va-01","title":"矢量初识","order":1,"tier":1,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"矢量合成初识：红箱(↙)与蓝箱(↘)直道对撞融合为紫箱(↓)，穿透紫偏振光栅抵达目标","boards":[["#######","#@    #","# R B##","##  p.#","#######"],["#######","#@    #","#   # #","##  $.#","#######"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":10,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":544,"solveTimeMs":10,"replayedSuccessfully":true,"synthesisEvents":[{"step":3,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":18,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":12680}}}},{"id":"va-02","title":"偏振分流","order":2,"tier":1,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"偏振分流与矢量叠加：现实界红蓝对撞融合破开紫光栅，镜像界蓝光独立通过蓝光栅","boards":[["########","#@     #","#  R B##","###  p.#","########"],["########","#@     #","#  # B##","###  b.#","########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":2253,"solveTimeMs":11,"replayedSuccessfully":true,"synthesisEvents":[{"step":6,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":21,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":24415}}}},{"id":"va-03","title":"回环对撞","order":3,"tier":1,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"空间调相：借由中岛回环绕后，在纵向通道对撞合成紫箱送入目标","boards":[["########","#@     #","# ## R #","# ## B##","##   p.#","########"],["########","#@     #","# ###  #","#   # ##","##   $.#","########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":1575,"solveTimeMs":8,"replayedSuccessfully":true,"synthesisEvents":[{"step":11,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":29,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":3558}}}},{"id":"va-04","title":"暂缓合成","order":4,"tier":2,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"时序冲突：红箱必须先独自穿过红光栅通道，若过早合成紫箱则无法通过红光栅自锁","boards":[["##########","#@       #","#  R r   #","## # #####","#  B  p.##","##########"],["##########","#@       #","#    #   #","#### # ###","#     $.##","##########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":15737,"solveTimeMs":42,"replayedSuccessfully":true,"synthesisEvents":[{"step":14,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":44,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":63205}}}},{"id":"va-05","title":"门栓守御","order":5,"tier":2,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"门栓拦截：红箱穿过红光栅暂存侧道，待蓝箱挪移避让后再迎头对撞合成紫箱攻门","boards":[["##########","#@       #","#  R r   #","## # #####","#  B   p.#","##########"],["##########","#@       #","#  # #   #","#### #####","#      $.#","##########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":19,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":18275,"solveTimeMs":51,"replayedSuccessfully":true,"synthesisEvents":[{"step":15,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":44,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":80602}}}},{"id":"va-06","title":"双室瓶颈","order":6,"tier":2,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"双室长程长廊：利用双室瓶颈与回廊循环，红蓝两箱跨室交汇破障攻门","boards":[["########","#@   ###","# R  ###","# #B   #","# # ####","#    p.#","########"],["########","#@ #####","#   ####","### ####","# #  ###","#    $.#","########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":17427,"solveTimeMs":57,"replayedSuccessfully":true,"synthesisEvents":[{"step":5,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":27,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":87506}}}},{"id":"va-07","title":"回环置换","order":7,"tier":3,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"相位绕行：利用环形回廊调和红蓝箱相对位移，规避死角并精准对撞","boards":[["#########","#@      #","#  ##R  #","#  #  B##","##    p.#","#########"],["#########","#@      #","#  #### #","#     B##","##    $.#","#########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":23,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":12543,"solveTimeMs":45,"replayedSuccessfully":true,"synthesisEvents":[{"step":16,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":33,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":197262}}}},{"id":"va-08","title":"侧袋置换","order":8,"tier":3,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"经典仓储融合 (Microban #21)：利用狭窄侧袋调换红蓝箱序，在主干道破障攻门","boards":[["#######","# .p  #","# #   #","# RB#@#","##    #","#######"],["#######","#   . #","# # # #","#  $#@#","##    #","#######"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":23,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":23200,"solveTimeMs":78,"replayedSuccessfully":true,"synthesisEvents":[{"step":9,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":24,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":53518}}}},{"id":"va-09","title":"蛇形调车","order":9,"tier":3,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"经典仓储融合 (Microban #9)：长程蛇形调车场，极性回廊调转箱序与长距锁相","boards":[["##########","#@       #","#  ##R   #","#  ## B###","##    p.##","##########"],["##########","#@       #","#  ####  #","#     B###","##    $.##","##########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":40,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":147488,"solveTimeMs":611,"replayedSuccessfully":true,"synthesisEvents":[{"step":24,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":25,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":179904}}}},{"id":"va-10","title":"双红抉择","order":10,"tier":3,"scheme":"A","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"不可逆亏损抉择 (Microban #28)：双红一蓝必损其一，玩家须精确研判保留哪只红箱入闸","boards":[["#######","#   ###","# @ ###","# RR ##","##B  ##","# r.p.#","#######"],["######","#@  ##","##  ##","## ###","## ###","## $.#","######"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":45,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":145896,"solveTimeMs":599,"replayedSuccessfully":true,"synthesisEvents":[{"step":10,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":23,"consumedId":3,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":117334}}}},{"id":"vb-01","title":"跨界初识","order":11,"tier":1,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"跨界对撞初识：两界同步迎头对撞，红蓝箱于虫洞交汇融合为紫箱，送入紫偏振光栅","boards":[["#######","#@    #","# ### #","#  R c#","# ###p#","# ###.#","#######"],["#######","#@    #","# ### #","#  B c#","# ### #","# ### #","#######"]],"conduits":[{"a":{"side":0,"x":5,"y":3},"b":{"side":1,"x":5,"y":3},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":230,"solveTimeMs":2,"replayedSuccessfully":true,"synthesisEvents":[{"step":5,"syntheses":[{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":26,"toPos":26,"resultingColor":3,"color":3},{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":26,"toPos":26,"resultingColor":3,"color":3}]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":87}}}},{"id":"vb-02","title":"相位校调","order":12,"tier":1,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"相位校调：两界起始纵向非对称，玩家须在一侧借北墙四度顿步调和步调，使红蓝双箱精准同步对撞","boards":[["#######","#@    #","# ### #","#  R c#","# ###p#","# ###.#","#######"],["#######","#     #","# ### #","#  B c#","# ### #","#@### #","#######"]],"conduits":[{"a":{"side":0,"x":5,"y":3},"b":{"side":1,"x":5,"y":3},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":4165,"solveTimeMs":24,"replayedSuccessfully":true,"synthesisEvents":[{"step":9,"syntheses":[{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":26,"toPos":26,"resultingColor":3,"color":3},{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":26,"toPos":26,"resultingColor":3,"color":3}]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":7537}}}},{"id":"vb-03","title":"偏振门栓","order":13,"tier":1,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"偏振门栓：界内偏振光栅先行过滤，红蓝两箱分别穿越各自专属光栅后，再行跨界对撞合成紫箱","boards":[["########","#@     #","# #### #","# Rr  c#","# ####p#","# ####.#","########"],["########","#@     #","# #### #","# Bb  c#","# #### #","# #### #","########"]],"conduits":[{"a":{"side":0,"x":6,"y":3},"b":{"side":1,"x":6,"y":3},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":20,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":320,"solveTimeMs":4,"replayedSuccessfully":true,"synthesisEvents":[{"step":6,"syntheses":[{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":30,"toPos":30,"resultingColor":3,"color":3},{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":30,"toPos":30,"resultingColor":3,"color":3}]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":116}}}},{"id":"vb-04","title":"侧道调相","order":14,"tier":2,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"跨界侧袋调车：两界拓扑宽度非对称 (8x7 vs 7x7)，一界须在侧道顿步调转推力方向后再跨界合体","boards":[["########","#@     #","# #### #","#   R c#","# ####p#","# ####.#","########"],["#######","#@    #","# ### #","#  B c#","# ### #","# ### #","#######"]],"conduits":[{"a":{"side":0,"x":6,"y":3},"b":{"side":1,"x":5,"y":3},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":23,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":4774,"solveTimeMs":23,"replayedSuccessfully":true,"synthesisEvents":[{"step":21,"syntheses":[{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":26,"toPos":30,"resultingColor":3,"color":3},{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":26,"toPos":30,"resultingColor":3,"color":3}]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10045}}}},{"id":"vb-05","title":"逆向迎头","order":15,"tier":2,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"正交迎头引燃：两界沿正交轴向逼近虫洞，因方向解耦必有一箱先行泊入驻留，再由对界切入引燃","boards":[["#######","#@    #","# ###R#","# ###c#","# ###p#","# ###.#","#######"],["#######","#@    #","# ### #","#  Bc #","# ### #","# ### #","#######"]],"conduits":[{"a":{"side":0,"x":5,"y":3},"b":{"side":1,"x":5,"y":3},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":26,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":3415,"solveTimeMs":27,"replayedSuccessfully":true,"synthesisEvents":[{"step":24,"syntheses":[{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":26,"toPos":26,"resultingColor":3,"color":3},{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":26,"toPos":26,"resultingColor":3,"color":3}]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":722}}}},{"id":"vb-06","title":"镜像穿梭","order":16,"tier":2,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"镜像穿梭分流：红箱借由虫洞单向跃迁至镜像界清空本界通道，两箱在镜像界汇聚对撞合体攻门","boards":[["#########","#@      #","# ##### #","#    R c#","# ##### #","#       #","#########"],["#########","#@      #","# c     #","# ##### #","#     B #","# #####p#","# #####.#","#########"]],"conduits":[{"a":{"side":0,"x":7,"y":3},"b":{"side":1,"x":2,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":27,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":31811,"solveTimeMs":144,"replayedSuccessfully":true,"synthesisEvents":[{"step":25,"syntheses":[null,{"type":"synthesis","boardIndex":1,"pos":43,"consumedId":1,"targetId":2,"resultingColor":3,"color":3}]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":54201}}}},{"id":"vb-07","title":"双孔交错","order":17,"tier":3,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"双孔交错置换：界内偏振阻断直行通道，红箱必须先行跃迁首洞借道，再在次洞迎头对撞合体攻门","boards":[["#########","#@      #","#    R c#","# ##### #","#b##### #","#       #","#     #c#","#     #p#","#     #.#","#########"],["#########","#@      #","#      c#","# ##### #","#       #","# ##### #","#    B c#","# ##### #","# ##### #","#########"]],"conduits":[{"a":{"side":0,"x":7,"y":2},"b":{"side":1,"x":7,"y":2},"outputSide":1},{"a":{"side":0,"x":7,"y":6},"b":{"side":1,"x":7,"y":6},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":28,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":50737,"solveTimeMs":155,"replayedSuccessfully":true,"synthesisEvents":[{"step":26,"syntheses":[null,{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":61,"toPos":61,"resultingColor":3,"color":3}]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":89123}}}},{"id":"vb-08","title":"双红交错","order":18,"tier":3,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"经典仓储融合 (Microban #28 跨界对偶)：双红一蓝跨界交错，须精确研判保留哪只红箱入闸，哪只用于跨界合成","boards":[["#######","#@  ###","#   ###","# # ###","# RR ##","##  c##","# r.p.#","#######"],["######","#@  ##","#   ##","# # ##","#  B #","##  c#","######"]],"conduits":[{"a":{"side":0,"x":4,"y":5},"b":{"side":1,"x":4,"y":5},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":32,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":118480,"solveTimeMs":431,"replayedSuccessfully":true,"synthesisEvents":[{"step":14,"syntheses":[{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":34,"toPos":39,"resultingColor":3,"color":3},{"type":"conduit_collision","fromSide":1,"toSide":0,"fromPos":34,"toPos":39,"resultingColor":3,"color":3}]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":120618}}}},{"id":"vb-09","title":"蛇形调车","order":19,"tier":3,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"经典仓储融合 (Microban #9 S形长廊)：双界长程蛇形调车，极性回廊调转箱序与长距锁相","boards":[["##########","#@       #","#  ##  R #","#  ## c###","##    p.##","##########"],["##########","#@       #","#  ####  #","#    Bc###","##      ##","##########"]],"conduits":[{"a":{"side":0,"x":6,"y":3},"b":{"side":1,"x":6,"y":3},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":35,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":82913,"solveTimeMs":215,"replayedSuccessfully":true,"synthesisEvents":[{"step":18,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":26,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":104902}}}},{"id":"vb-10","title":"跨界圣堂","order":20,"tier":3,"scheme":"B","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"终局圣堂·双界多箱耦合 (Microban #9 S形调车场)：红蓝两箱跨界对撞，中立箱侧向协同清障，步长达40步之极限死锁推演","boards":[["##########","#@       #","#  ##R   #","#  ## c###","##    p.##","##########"],["##########","#@       #","#  ####  #","#    Bc###","##    $.##","##########"]],"conduits":[{"a":{"side":0,"x":6,"y":3},"b":{"side":1,"x":6,"y":3},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":40,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":256015,"solveTimeMs":974,"replayedSuccessfully":true,"synthesisEvents":[{"step":27,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":45,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":86473}}}},{"id":"vc-01","title":"棱镜初开","order":21,"tier":1,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"纵向分光初识：紫箱推入棱镜向下分光为红蓝双原色，分别穿过对应红蓝偏振门落位","boards":[["##########","#        #","# ####   #","# #   P  #","# #   ^  #","# #  r#b##","#@#  .#.##","##########"],["##########","#        #","# ###### #","# #      #","# #      #","# #      #","#@#      #","##########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":3344,"solveTimeMs":13,"replayedSuccessfully":true,"synthesisEvents":[],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":22124}}}},{"id":"vc-02","title":"正交分光","order":22,"tier":1,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"正交分光：横向推入棱镜沿纵向分光为南北双原色，分流进入上下偏振通道落位","boards":[["############","#     r   .#","#   P ^    #","#     b   .#","# ##########","# ##########","#@##########","############"],["############","#          #","# ######## #","#          #","# ##########","# ##########","#@##########","############"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":23,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":30347,"solveTimeMs":92,"replayedSuccessfully":true,"synthesisEvents":[],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":13749}}}},{"id":"vc-03","title":"翼侧疏浚","order":23,"tier":1,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"翼侧疏浚：棱镜侧翼受阻将刚性阻断分光，必须先调离侧翼蓝箱疏浚通道，再完成分光三目标落位","boards":[["##########","#        #","# #  P   #","# #  ^B  #","# ##r#b#b#","#@##.#.#.#","##########"],["##########","#        #","# ###### #","# ###### #","# ###### #","#@       #","##########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":28,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":111735,"solveTimeMs":361,"replayedSuccessfully":true,"synthesisEvents":[],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":105437}}}},{"id":"vc-04","title":"瓶颈呼吸","order":24,"tier":2,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"瓶颈呼吸：原色对撞合成为紫箱通过单行紫光栅咽喉（2->1），随后推入棱镜重新拓扑呼吸展开为双原色落位（1->2）","boards":[["#########","#       #","# # R B #","# ###p###","#@#     #","# #  ^  #","# ###r#b#","# ###.#.#","#########"],["#########","#       #","# ##### #","# ##### #","#@##### #","# ##### #","# ##### #","#       #","#########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":32,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":18243,"solveTimeMs":65,"replayedSuccessfully":true,"synthesisEvents":[{"step":13,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":23,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10271}}}},{"id":"vc-05","title":"偏振滤光翼","order":25,"tier":2,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"偏振滤光翼：棱镜双翼直接部署红蓝偏振光栅，逆向推挤将因极性错位刚性阻断，须精准绕行由北向南推入分光","boards":[["###########","#         #","# ### ##  #","# #   # P #","# #   #   #","# # #     #","# #.r^b.###","# #########","#@#########","###########"],["###########","#         #","# ### ##  #","# #   #   #","# #   #   #","# # #     #","# #     ###","# #########","#@#########","###########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":35,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":17717,"solveTimeMs":38,"replayedSuccessfully":true,"synthesisEvents":[],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":41944}}}},{"id":"vc-06","title":"回环分相","order":26,"tier":2,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"回环分相：两界步调解耦，现实界执行原色对撞与双翼拓扑分光，镜像界须在长回廊中借墙调相","boards":[["###########","#         #","# # R   B #","# #####p###","# #       #","# #    ^  #","# ####r#b##","# #### # ##","# ####.#.##","#@#########","###########"],["###########","#         #","# ####### #","# #     # #","# # ### # #","# #     # #","# ##### # #","# #     # #","# #       #","#@#########","###########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":37,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":53399,"solveTimeMs":140,"replayedSuccessfully":true,"synthesisEvents":[{"step":20,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":29,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":52382}}}},{"id":"vc-07","title":"双棱镜阶梯","order":27,"tier":3,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"双棱镜阶梯：深层隔间原色调车对撞突破紫偏振光栅，进入阶梯下层受控分光实现双原色回流落位","boards":[["###########","#   #     #","# # R   B #","# ### # # #","# ###p#####","# #       #","# #  ^    #","# ###r#b###","#@### # ###","# ###.#.###","###########"],["###########","#         #","# ####### #","# #     # #","# # ### # #","# #     # #","# ##### # #","# #     # #","#@#     # #","# #       #","###########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":44,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":130412,"solveTimeMs":418,"replayedSuccessfully":true,"synthesisEvents":[{"step":20,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":113840}}}},{"id":"vc-08","title":"侧袋分光调车","order":28,"tier":3,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"侧袋分光调车：经典Microban #21侧袋调车重构，先在调车侧袋倒序对撞合成，再利用侧袋棱镜完成解耦分光","boards":[["###########","#   #     #","# # R   B #","# ### # # #","# ###p#####","# #       #","# #  ^    #","# ###r#b ##","# ###    ##","#@###.##.##","###########"],["###########","#         #","# ####### #","# #     # #","# # ### # #","# #     # #","# ##### # #","# #     # #","#@#     # #","# #       #","###########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":46,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":173296,"solveTimeMs":576,"replayedSuccessfully":true,"synthesisEvents":[{"step":21,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":121236}}}},{"id":"vc-09","title":"蛇形双界呼吸","order":29,"tier":3,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"蛇形双界呼吸：经典Microban #9 S形曲率走廊，双原色在首弯对撞合成，通过曲率中段偏振栅，在终点棱镜拓扑延展","boards":[["###########","#   #     #","# # R   B #","# ### # # #","# ###p#####","# #       #","# #  ^    #","# ###r#b ##","# ###    ##","# ### #  ##","#@###.##.##","###########"],["###########","#         #","# ####### #","# #     # #","# # ### # #","# #     # #","# ##### # #","# #     # #","# # ### # #","# #     # #","#@#       #","###########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":50,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":271011,"solveTimeMs":878,"replayedSuccessfully":true,"synthesisEvents":[{"step":22,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":140459}}}},{"id":"vc-10","title":"极性重构大师","order":30,"tier":3,"scheme":"C","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"极性重构大师：Microban #28双原色逆境博弈，通过双重棱镜极性延展与受控偏振门阵列，完成终极多相拓扑重构","boards":[["###########","#   #     #","# # R   B #","# ### # # #","# ###p#####","# #      ##","# #  ^   ##","# ###r##b##","# ###    ##","# ### #  ##","# ### #  ##","#@###.##.##","###########"],["###########","#         #","# ####### #","# ####### #","# ####### #","# ####### #","# ####### #","# ####### #","# ####### #","# ####### #","# ####### #","#@        #","###########"]],"conduits":[],"solution":"","solutionLength": 0,"expectedSteps":54,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":195006,"solveTimeMs":713,"replayedSuccessfully":true,"synthesisEvents":[{"step":23,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":89401}}}},{"id":"vf-01","title":"太极交汇","order":31,"tier":4,"scheme":"FUSION","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"太极交汇：现实与镜像双界双原色经由虫洞迎头相撞（B），融聚为紫晶穿越紫偏振门（A），随后入棱镜极性分光呼吸延展（C），两极分别归位","boards":[["###########","#         #","# # R   c #","# #####p###","# #       #","# #    ^  #","# ####r#b##","# #### # ##","# ####.#.##","#@#########","###########"],["###########","#   ##### #","# # B   c #","# ####### #","# #     # #","# # ### # #","# #     # #","# ##### # #","# #       #","#@#########","###########"]],"conduits":[{"a":{"side":0,"x":8,"y":2},"b":{"side":1,"x":8,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":37,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":83754,"solveTimeMs":289,"replayedSuccessfully":true,"synthesisEvents":[{"step":20,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":29,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":183483},"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10515},"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":207238}}}},{"id":"vf-02","title":"光栅巡回","order":32,"tier":4,"scheme":"FUSION","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"光栅巡回：镜像蓝箱经由虫洞跃迁入界（跨界透镜D），穿透蓝偏振门（A）与宿存红箱在Microban回廊中调车会合，熔炼紫晶贯穿紫门落位","boards":[["###########","#   #     #","# # c b R #","# ### # # #","# ### #p###","# #   #   #","# ##### # #","# ##### # #","# ##### # #","# ##### # #","#@#####.# #","###########"],["###########","#   #     #","# #   B c #","# ####### #","# #     # #","# # ### # #","# #     # #","# ##### # #","# #     # #","# # ### # #","#@#       #","###########"]],"conduits":[{"a":{"side":0,"x":4,"y":2},"b":{"side":1,"x":8,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":43,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":62560,"solveTimeMs":214,"replayedSuccessfully":true,"synthesisEvents":[{"step":33,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":29,"consumedId":1,"targetId":2,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":191719},"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":45924}}}},{"id":"vf-03","title":"四象呼吸","order":33,"tier":4,"scheme":"FUSION","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"四象呼吸：两界原色跨界迎头对撞聚为紫晶（B），贯穿紫偏振咽喉（A），随后入棱镜极性分光呼吸延展为双原色（C），分别穿透专属偏振门双轨落位","boards":[["###########","#   #     #","# # R   c #","# ### # # #","# ###p#####","# #       #","# #  ^    #","# ###r#b ##","# ###    ##","#@###.##.##","###########"],["###########","#   ##### #","# # B   c #","# ####### #","# #     # #","# # ### # #","# #     # #","# ##### # #","# # ### # #","#@#       #","###########"]],"conduits":[{"a":{"side":0,"x":8,"y":2},"b":{"side":1,"x":8,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":46,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":248143,"solveTimeMs":743,"replayedSuccessfully":true,"synthesisEvents":[{"step":21,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":228978},"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":6817},"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":261253}}}},{"id":"vf-04","title":"跨界对偶","order":34,"tier":4,"scheme":"FUSION","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"跨界对偶：经典Microban #21侧袋重构，跨界虫洞迎头对撞（B）穿透紫偏振门（A），入棱镜分光延展（C），多阶深井双轨沉降落位","boards":[["###########","#   #     #","# # R   c #","# ### # # #","# ###p#####","# #       #","# #  ^    #","# ###r#b ##","# ### #  ##","# ### #  ##","# ###    ##","#@###.##.##","###########"],["###########","#   #######","# # B   c #","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","#@#########","###########"]],"conduits":[{"a":{"side":0,"x":8,"y":2},"b":{"side":1,"x":8,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":54,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":196513,"solveTimeMs":606,"replayedSuccessfully":true,"synthesisEvents":[{"step":23,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":82622},"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8956},"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":95939}}}},{"id":"vf-05","title":"双子圣堂","order":35,"tier":4,"scheme":"FUSION","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"双子圣堂：经典Microban双子大圣堂重构，极性原色迎头对撞（B）贯穿紫偏振中枢（A），经棱镜核心极性呼吸分光（C），双偏振门深井共鸣落位","boards":[["###########","#   #     #","# # R   c #","# ### # # #","# ###p#####","# #       #","# #  ^    #","# ###r#b ##","# ### #  ##","# ### #  ##","# ### #  ##","# ### #  ##","# ###    ##","#@###.##.##","###########"],["###########","#   #######","# # B   c #","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","#@#########","###########"]],"conduits":[{"a":{"side":0,"x":8,"y":2},"b":{"side":1,"x":8,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":62,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":405573,"solveTimeMs":1234,"replayedSuccessfully":true,"synthesisEvents":[{"step":25,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":101838},"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11379},"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":118339}}}},{"id":"vf-06","title":"蛇形超对称","order":36,"tier":4,"scheme":"FUSION","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"蛇形超对称：经典Microban #9 S形曲率重构，跨界虫洞迎头聚合（B）贯穿紫偏振门（A），入棱镜分光延展（C），长程蛇形双井超对称落位","boards":[["###########","#   #     #","# # R   c #","# ### #####","# ###p#####","# #       #","# #  ^    #","# ###r#b# #","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ###   ###","#@###.#.###","###########"],["###########","#   #######","# # B   c #","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","#@#########","###########"]],"conduits":[{"a":{"side":0,"x":8,"y":2},"b":{"side":1,"x":8,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":69,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":294108,"solveTimeMs":972,"replayedSuccessfully":true,"synthesisEvents":[{"step":27,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":65900},"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":9721},"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":80522}}}},{"id":"vf-07","title":"量子亏损","order":37,"tier":4,"scheme":"FUSION","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"量子亏损：经典Microban #28不可逆亏损抉择重构，双界原色经虫洞聚变（B）穿透极性屏障（A），由拓扑棱镜解构分光（C），长程深井阶梯共振落位","boards":[["###########","#   #     #","# # R   c #","# ### #####","# ###p#####","# #       #","# #  ^    #","# ###r#b# #","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ###   ###","#@###.#.###","###########"],["###########","#   #######","# # B   c #","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","#@#########","###########"]],"conduits":[{"a":{"side":0,"x":8,"y":2},"b":{"side":1,"x":8,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":73,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":363753,"solveTimeMs":1340,"replayedSuccessfully":true,"synthesisEvents":[{"step":28,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":71409},"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10633},"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":87279}}}},{"id":"vf-08","title":"色彩奇点","order":38,"tier":4,"scheme":"FUSION","ruleVersion":"CG-COLOR-SYNTH-1","mapping":"identity","designGoal":"色彩奇点：终极集大成者，四重机制大统一（A偏振门 + B跨界虫洞迎头聚合 + C拓扑棱镜分光呼吸 + D深井超长程共振调车），双界终极闭环收敛","boards":[["###########","#   #     #","# # R   c #","# ### #####","# ###p#####","# #       #","# #  ^    #","# ###r#b# #","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ### # ###","# ###   ###","#@###.#.###","###########"],["###########","#   #######","# # B   c #","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","# #########","#@#########","###########"]],"conduits":[{"a":{"side":0,"x":8,"y":2},"b":{"side":1,"x":8,"y":2},"outputSide":0}],"solution":"","solutionLength": 0,"expectedSteps":77,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/color-synth-engine.mjs","solver":"BFS_COMPACT","exploredStates":444347,"solveTimeMs":1555,"replayedSuccessfully":true,"synthesisEvents":[{"step":29,"syntheses":[{"type":"synthesis","boardIndex":0,"pos":28,"consumedId":2,"targetId":1,"resultingColor":3,"color":3},null]}],"counterfactuals":{"noSynthesis":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":77132},"noConduit":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11585},"noPrism":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":94300}}}}]};
+
+    if (window.location.search.includes('embed=1')) {
+      document.body.classList.add('embedded');
+    }
+
+    const DIRS = ['U', 'D', 'L', 'R'];
+    const VECTORS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    const MAPS = { identity: [0, 1, 2, 3], vertical: [0, 1, 3, 2], slash: [3, 2, 0, 1] };
+
+    const COLOR_NEUTRAL = 0;
+    const COLOR_RED = 1;
+    const COLOR_BLUE = 2;
+    const COLOR_PURPLE = 3;
+
+    // SVG vector symbols for crystal boxes
+    const SVG_RED = '<svg class="box-vector-svg" viewBox="0 0 24 24"><path d="M19 5 L6 18 M6 18 L6 9 M6 18 L15 18" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 4px #ef4444);"/></svg>';
+    const SVG_BLUE = '<svg class="box-vector-svg" viewBox="0 0 24 24"><path d="M5 5 L18 18 M18 18 L9 18 M18 18 L18 9" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 4px #3b82f6);"/></svg>';
+    const SVG_PURPLE = '<svg class="box-vector-svg" viewBox="0 0 24 24"><path d="M12 4 L12 20 M12 20 L5 13 M12 20 L19 13" fill="none" stroke="#fef08a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 4px #f59e0b) drop-shadow(0 0 8px #a855f7);"/></svg>';
+
+    // SVG Crystal Prism Tile
+    const SVG_PRISM = `
+      <svg viewBox="0 0 38 38" width="34" height="34">
+        <defs>
+          <linearGradient id="prismGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+            <stop offset="35%" stop-color="#fef08a" stop-opacity="0.85"/>
+            <stop offset="100%" stop-color="#c084fc" stop-opacity="0.75"/>
+          </linearGradient>
+          <filter id="prismGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+        <!-- Chromatic Lateral Dispersion Rays -->
+        <line x1="19" y1="18" x2="4" y2="28" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" opacity="0.85" style="filter:drop-shadow(0 0 3px #ef4444);"/>
+        <line x1="19" y1="18" x2="34" y2="28" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" opacity="0.85" style="filter:drop-shadow(0 0 3px #3b82f6);"/>
+        <!-- Crystal Prism Triangle -->
+        <polygon points="19,5 7,29 31,29" fill="url(#prismGrad)" stroke="#eab308" stroke-width="1.6" filter="url(#prismGlow)"/>
+        <polygon points="19,9 11,27 27,27" fill="rgba(255,255,255,0.45)"/>
+        <circle cx="19" cy="8" r="2.2" fill="#fbbf24" style="filter:drop-shadow(0 0 3px #f59e0b);"/>
+      </svg>
+    `;
+
+    let curIdx = 0;
+    let currentTab = 'A';
+    let config = null;
+    let state = null;
+    let history = [];
+    let replayTimer = null;
+    let replaySpeed = 1;
+    let replayStepIdx = 0;
+
+    function gateAllowsColor(gateType, boxColor) {
+      if (!gateType) return true;
+      if (gateType === 'r') return boxColor === COLOR_RED;
+      if (gateType === 'b') return boxColor === COLOR_BLUE;
+      if (gateType === 'p') return boxColor === COLOR_PURPLE;
+      return false;
+    }
+
+    function compile(level) {
+      const mappingKey = level.mapping || 'identity';
+      let nextBoxId = 1;
+
+      const boards = level.boards.map((rawRows, side) => {
+        const width = Math.max(...rawRows.map(r => r.length));
+        const rows = rawRows.map(r => r.padEnd(width, ' '));
+        const height = rows.length;
+        const floor = [];
+        const goals = [];
+        const gates = {};
+        const prisms = new Set();
+        const conduitPositions = [];
+        const initialBoxes = [];
+        let player;
+
+        // Detect exterior void cells by flood-filling from grid boundaries containing ' '
+        const exteriorVoid = new Set();
+        const voidQueue = [];
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+              if (rows[y][x] === ' ') {
+                const p = y * width + x;
+                exteriorVoid.add(p);
+                voidQueue.push([x, y]);
+              }
+            }
+          }
+        }
+        while (voidQueue.length > 0) {
+          const [vx, vy] = voidQueue.shift();
+          for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+            const nx = vx + dx;
+            const ny = vy + dy;
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+              if (rows[ny][nx] === ' ') {
+                const np = ny * width + nx;
+                if (!exteriorVoid.has(np)) {
+                  exteriorVoid.add(np);
+                  voidQueue.push([nx, ny]);
+                }
+              }
+            }
+          }
+        }
+
+        rows.forEach((row, y) => [...row].forEach((ch, x) => {
+          if (ch === '#') return;
+          const pos = y * width + x;
+          if (ch === ' ' && exteriorVoid.has(pos)) return;
+          floor.push(pos);
+          if ('rbp'.includes(ch)) gates[pos] = ch;
+          if ('.+*123'.includes(ch)) goals.push(pos);
+          if ('@+'.includes(ch)) player = pos;
+          if (ch === '^' || ch === '▲') prisms.add(pos);
+          if (ch === 'c' || ch === 'C') conduitPositions.push(pos);
+
+          if (ch === '$' || ch === '*') {
+            initialBoxes.push({ id: nextBoxId++, pos, color: COLOR_NEUTRAL });
+          } else if (ch === 'R' || ch === '1') {
+            initialBoxes.push({ id: nextBoxId++, pos, color: COLOR_RED });
+          } else if (ch === 'B' || ch === '2') {
+            initialBoxes.push({ id: nextBoxId++, pos, color: COLOR_BLUE });
+          } else if (ch === 'P' || ch === '3') {
+            initialBoxes.push({ id: nextBoxId++, pos, color: COLOR_PURPLE });
+          }
+        }));
+
+        const floorSet = new Set(floor);
+        const neighbors = {};
+        for (const pos of floor) {
+          neighbors[pos] = VECTORS.map(([dx, dy]) => {
+            const x = (pos % width) + dx, y = Math.floor(pos / width) + dy;
+            const q = y * width + x;
+            return x >= 0 && x < width && y >= 0 && y < height && floorSet.has(q) ? q : -1;
+          });
+        }
+
+        return { width, height, floor, floorSet, goals, gates, prisms, conduitPositions, conduits: new Map(), neighbors, initialBoxes, player, exteriorVoid };
+      });
+
+      // Build conduit pairings
+      const conduitDefs = [];
+      if (Array.isArray(level.conduits) && level.conduits.length > 0) {
+        for (const c of level.conduits) {
+          const sideA = c.a?.side ?? 0;
+          const sideB = c.b?.side ?? 1;
+          const bA = boards[sideA];
+          const bB = boards[sideB];
+          const posA = c.a.pos !== undefined ? c.a.pos : (c.a.y * bA.width + c.a.x);
+          const posB = c.b.pos !== undefined ? c.b.pos : (c.b.y * bB.width + c.b.x);
+          const outputSide = c.outputSide ?? 0;
+          conduitDefs.push({
+            a: { side: sideA, pos: posA, x: posA % bA.width, y: Math.floor(posA / bA.width) },
+            b: { side: sideB, pos: posB, x: posB % bB.width, y: Math.floor(posB / bB.width) },
+            outputSide
+          });
+        }
+      } else if (boards[0].conduitPositions.length === 1 && boards[1].conduitPositions.length === 1) {
+        const posA = boards[0].conduitPositions[0];
+        const posB = boards[1].conduitPositions[0];
+        conduitDefs.push({
+          a: { side: 0, pos: posA, x: posA % boards[0].width, y: Math.floor(posA / boards[0].width) },
+          b: { side: 1, pos: posB, x: posB % boards[1].width, y: Math.floor(posB / boards[1].width) },
+          outputSide: 0
+        });
+      }
+
+      for (const c of conduitDefs) {
+        const linkA = { side: c.a.side, pos: c.a.pos, otherSide: c.b.side, otherPos: c.b.pos, outputSide: c.outputSide };
+        const linkB = { side: c.b.side, pos: c.b.pos, otherSide: c.a.side, otherPos: c.a.pos, outputSide: c.outputSide };
+        boards[c.a.side].conduits.set(c.a.pos, linkA);
+        boards[c.a.side].conduits[c.a.pos] = linkA;
+        boards[c.b.side].conduits.set(c.b.pos, linkB);
+        boards[c.b.side].conduits[c.b.pos] = linkB;
+      }
+
+      return {
+        boards,
+        conduits: conduitDefs,
+        mapping: MAPS[mappingKey] || MAPS.identity,
+        totalGoals: boards[0].goals.length + boards[1].goals.length,
+        initial: {
+          worlds: [
+            { player: boards[0].player, boxes: boards[0].initialBoxes.map(b => ({ ...b })) },
+            { player: boards[1].player, boxes: boards[1].initialBoxes.map(b => ({ ...b })) }
+          ]
+        }
+      };
+    }
+
+    function localIntent(board, world, dir, options = {}, side = 0) {
+      const p = world.player;
+      const dest = board.neighbors[p]?.[dir] ?? -1;
+      if (dest === -1) {
+        return { type: 'blocked', reason: 'wall' };
+      }
+
+      const boxAtDest = world.boxes.find(b => b.pos === dest);
+      if (!boxAtDest) {
+        return {
+          type: 'walk',
+          playerNext: dest,
+          boxesNext: world.boxes.map(b => ({ ...b })),
+          pushed: false,
+          synthesis: null
+        };
+      }
+
+      const beyond = board.neighbors[dest]?.[dir] ?? -1;
+      if (beyond === -1) {
+        return { type: 'blocked', reason: 'box_into_wall' };
+      }
+
+      // Scheme C: Prism Dispersion
+      if (board.prisms && board.prisms.has(beyond) && boxAtDest.color === COLOR_PURPLE) {
+        if (options.noPrism) {
+          return { type: 'blocked', reason: 'noPrism' };
+        }
+
+        if (world.boxes.some(b => b.pos === beyond)) {
+          return { type: 'blocked', reason: 'prism_occupied' };
+        }
+
+        let lat1, lat2;
+        if (dir === 0 || dir === 1) {
+          lat1 = board.neighbors[beyond]?.[2] ?? -1; // West
+          lat2 = board.neighbors[beyond]?.[3] ?? -1; // East
+        } else {
+          lat1 = board.neighbors[beyond]?.[0] ?? -1; // North
+          lat2 = board.neighbors[beyond]?.[1] ?? -1; // South
+        }
+
+        if (lat1 === -1 || lat2 === -1) {
+          return { type: 'blocked', reason: 'prism_flank_wall' };
+        }
+        if (world.boxes.some(b => b.pos === lat1 || b.pos === lat2)) {
+          return { type: 'blocked', reason: 'prism_flank_box' };
+        }
+        if (board.gates[lat1] && !gateAllowsColor(board.gates[lat1], COLOR_RED)) {
+          return { type: 'blocked', reason: 'prism_flank_gate_red' };
+        }
+        if (board.gates[lat2] && !gateAllowsColor(board.gates[lat2], COLOR_BLUE)) {
+          return { type: 'blocked', reason: 'prism_flank_gate_blue' };
+        }
+
+        return {
+          type: 'prism_dispersion',
+          playerNext: dest,
+          pushed: true,
+          box: boxAtDest,
+          beyond,
+          latRed: lat1,
+          latBlue: lat2,
+          synthesis: null
+        };
+      }
+
+      // Scheme B: Push into Conduit
+      const cLink = board.conduits?.get ? board.conduits.get(beyond) : board.conduits?.[beyond];
+      if (cLink) {
+        if (options.noConduit) {
+          return { type: 'blocked', reason: 'noConduit' };
+        }
+
+        return {
+          type: 'conduit_push',
+          playerNext: dest,
+          pushed: true,
+          box: boxAtDest,
+          fromSide: side,
+          fromPos: beyond,
+          toSide: cLink.otherSide,
+          toPos: cLink.otherPos,
+          outputSide: cLink.outputSide,
+          synthesis: null
+        };
+      }
+
+      // Normal push or Same-world synthesis
+      const gateBeyond = board.gates[beyond];
+      const boxAtBeyond = world.boxes.find(b => b.pos === beyond);
+
+      if (boxAtBeyond) {
+        if (options.noSynthesis) {
+          return { type: 'blocked', reason: 'noSynthesis' };
+        }
+
+        const c1 = boxAtDest.color;
+        const c2 = boxAtBeyond.color;
+        const isRedBlue = (c1 === COLOR_RED && c2 === COLOR_BLUE) || (c1 === COLOR_BLUE && c2 === COLOR_RED);
+
+        if (isRedBlue) {
+          if (gateBeyond === 'r' || gateBeyond === 'b') {
+            return { type: 'blocked', reason: 'gate_blocks_purple' };
+          }
+
+          const newBoxes = world.boxes
+            .filter(b => b.id !== boxAtDest.id)
+            .map(b => {
+              if (b.id === boxAtBeyond.id) {
+                return { ...b, color: COLOR_PURPLE };
+              }
+              return { ...b };
+            });
+
+          return {
+            type: 'same_world_synthesis',
+            playerNext: dest,
+            boxesNext: newBoxes,
+            pushed: true,
+            box: boxAtDest,
+            boxBeyond: boxAtBeyond,
+            beyond,
+            synthesis: {
+              type: 'synthesis',
+              boardIndex: side,
+              pos: beyond,
+              consumedId: boxAtDest.id,
+              targetId: boxAtBeyond.id,
+              resultingColor: COLOR_PURPLE,
+              color: COLOR_PURPLE
+            }
+          };
+        } else {
+          return { type: 'blocked', reason: 'same_color_collision' };
+        }
+      }
+
+      if (!gateAllowsColor(gateBeyond, boxAtDest.color)) {
+        return { type: 'blocked', reason: 'gate_blocks_color' };
+      }
+
+      const newBoxes = world.boxes.map(b => {
+        if (b.id === boxAtDest.id) {
+          return { ...b, pos: beyond };
+        }
+        return { ...b };
+      });
+
+      return {
+        type: 'normal_push',
+        playerNext: dest,
+        boxesNext: newBoxes,
+        pushed: true,
+        box: boxAtDest,
+        beyond,
+        synthesis: null
+      };
+    }
+
+    function step(cfg, curState, inputChar, options = {}) {
+      const d = DIRS.indexOf(inputChar);
+      if (d === -1) return { next: curState, changed: false, events: {} };
+
+      const d0 = d;
+      const d1 = cfg.mapping[d];
+
+      const plan0 = localIntent(cfg.boards[0], curState.worlds[0], d0, options, 0);
+      const plan1 = localIntent(cfg.boards[1], curState.worlds[1], d1, options, 1);
+
+      let accepted0 = plan0.type !== 'blocked';
+      let accepted1 = plan1.type !== 'blocked';
+
+      let pushed0 = Boolean(plan0.pushed);
+      let pushed1 = Boolean(plan1.pushed);
+
+      let synth0 = plan0.synthesis || null;
+      let synth1 = plan1.synthesis || null;
+
+      let disp0 = null;
+      let disp1 = null;
+
+      const transits = [];
+
+      let maxBoxId = 0;
+      for (const w of curState.worlds) {
+        for (const b of w.boxes) {
+          if (b.id > maxBoxId) maxBoxId = b.id;
+        }
+      }
+
+      const nextWorlds = [
+        { player: curState.worlds[0].player, boxes: curState.worlds[0].boxes.map(b => ({ ...b })) },
+        { player: curState.worlds[1].player, boxes: curState.worlds[1].boxes.map(b => ({ ...b })) }
+      ];
+
+      const cp0 = plan0.type === 'conduit_push' ? plan0 : null;
+      const cp1 = plan1.type === 'conduit_push' ? plan1 : null;
+
+      if (cp0 && cp1 && cp0.toSide === 1 && cp0.toPos === cp1.fromPos && cp1.toSide === 0 && cp1.toPos === cp0.fromPos) {
+        // Case B.1: Synchronized head-on conduit collision
+        const isRedBlue = (cp0.box.color === COLOR_RED && cp1.box.color === COLOR_BLUE) ||
+                          (cp0.box.color === COLOR_BLUE && cp1.box.color === COLOR_RED);
+        if (isRedBlue && !options.noSynthesis) {
+          const outSide = cp0.outputSide ?? 0;
+          const outPos = outSide === 0 ? cp0.fromPos : cp1.fromPos;
+          const gateOut = cfg.boards[outSide].gates[outPos];
+
+          if (gateAllowsColor(gateOut, COLOR_PURPLE)) {
+            accepted0 = true;
+            accepted1 = true;
+            pushed0 = true;
+            pushed1 = true;
+
+            const consumedSide = 1 - outSide;
+            const synthEvent = {
+              type: 'conduit_collision',
+              fromSide: consumedSide,
+              toSide: outSide,
+              fromPos: consumedSide === 0 ? cp0.fromPos : cp1.fromPos,
+              toPos: outPos,
+              resultingColor: COLOR_PURPLE,
+              color: COLOR_PURPLE
+            };
+            synth0 = synthEvent;
+            synth1 = synthEvent;
+
+            nextWorlds[0].player = cp0.playerNext;
+            nextWorlds[1].player = cp1.playerNext;
+
+            nextWorlds[outSide].boxes = curState.worlds[outSide].boxes.map(b => {
+              if (b.id === (outSide === 0 ? cp0.box.id : cp1.box.id)) {
+                return { ...b, pos: outPos, color: COLOR_PURPLE };
+              }
+              return { ...b };
+            });
+
+            nextWorlds[consumedSide].boxes = curState.worlds[consumedSide].boxes
+              .filter(b => b.id !== (consumedSide === 0 ? cp0.box.id : cp1.box.id))
+              .map(b => ({ ...b }));
+          } else {
+            accepted0 = false; accepted1 = false; pushed0 = false; pushed1 = false;
+          }
+        } else {
+          accepted0 = false; accepted1 = false; pushed0 = false; pushed1 = false;
+        }
+      } else {
+        // Unilateral conduit push check
+        const conduitPushes = [
+          { side: 0, cp: cp0, otherPlan: plan1 },
+          { side: 1, cp: cp1, otherPlan: plan0 }
+        ];
+
+        for (const { side, cp, otherPlan } of conduitPushes) {
+          if (!cp) continue;
+          const otherSide = cp.toSide;
+          const targetPos = cp.toPos;
+          const otherWorld = curState.worlds[otherSide];
+
+          if (!cfg.boards[otherSide].floorSet?.has(targetPos)) {
+            if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+            continue;
+          }
+
+          if (otherWorld.player === targetPos) {
+            if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+            continue;
+          }
+          if (otherPlan.type !== 'blocked' && otherPlan.playerNext === targetPos) {
+            if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+            continue;
+          }
+          if (otherPlan.type !== 'blocked' && (otherPlan.beyond === targetPos || otherPlan.fromPos === targetPos)) {
+            if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+            continue;
+          }
+          if (otherPlan.type === 'prism_dispersion' && (otherPlan.latRed === targetPos || otherPlan.latBlue === targetPos)) {
+            if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+            continue;
+          }
+
+          const residentBox = otherWorld.boxes.find(b => b.pos === targetPos);
+          if (residentBox) {
+            const residentIsPushed = otherPlan.type !== 'blocked' && otherPlan.pushed && otherPlan.box?.id === residentBox.id;
+            if (residentIsPushed) {
+              if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+              continue;
+            }
+
+            const isRedBlue = (cp.box.color === COLOR_RED && residentBox.color === COLOR_BLUE) ||
+                              (cp.box.color === COLOR_BLUE && residentBox.color === COLOR_RED);
+            const gateTarget = cfg.boards[otherSide].gates[targetPos];
+            const allowsPurple = gateAllowsColor(gateTarget, COLOR_PURPLE);
+
+            if (isRedBlue && !options.noSynthesis && allowsPurple) {
+              if (side === 0) { accepted0 = true; pushed0 = true; } else { accepted1 = true; pushed1 = true; }
+              const synthEvent = {
+                type: 'conduit_collision',
+                fromSide: side,
+                toSide: otherSide,
+                fromPos: cp.fromPos,
+                toPos: targetPos,
+                resultingColor: COLOR_PURPLE,
+                color: COLOR_PURPLE
+              };
+              synth0 = synthEvent;
+              synth1 = synthEvent;
+
+              nextWorlds[side].player = cp.playerNext;
+              nextWorlds[side].boxes = curState.worlds[side].boxes
+                .filter(b => b.id !== cp.box.id)
+                .map(b => ({ ...b }));
+
+              cp.transmutedTarget = residentBox.id;
+            } else {
+              if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+            }
+          } else {
+            const gateTarget = cfg.boards[otherSide].gates[targetPos];
+            const gateAllows = gateAllowsColor(gateTarget, cp.box.color);
+
+            if (gateAllows && !options.noConduit) {
+              if (side === 0) { accepted0 = true; pushed0 = true; } else { accepted1 = true; pushed1 = true; }
+              transits.push({
+                type: 'conduit_transit',
+                fromSide: side,
+                toSide: otherSide,
+                fromPos: cp.fromPos,
+                toPos: targetPos,
+                color: cp.box.color
+              });
+
+              nextWorlds[side].player = cp.playerNext;
+              nextWorlds[side].boxes = curState.worlds[side].boxes
+                .filter(b => b.id !== cp.box.id)
+                .map(b => ({ ...b }));
+
+              cp.transferredBox = { ...cp.box, pos: targetPos };
+            } else {
+              if (side === 0) { accepted0 = false; pushed0 = false; } else { accepted1 = false; pushed1 = false; }
+            }
+          }
+        }
+
+        // Resolve non-conduit plans
+        for (let side = 0; side < 2; side++) {
+          const plan = side === 0 ? plan0 : plan1;
+          const accepted = side === 0 ? accepted0 : accepted1;
+          if (!accepted) {
+            nextWorlds[side].player = curState.worlds[side].player;
+            nextWorlds[side].boxes = curState.worlds[side].boxes.map(b => ({ ...b }));
+            continue;
+          }
+
+          if (plan.type === 'walk') {
+            nextWorlds[side].player = plan.playerNext;
+            nextWorlds[side].boxes = state.worlds[side].boxes.map(b => ({ ...b }));
+          } else if (plan.type === 'normal_push' || plan.type === 'same_world_synthesis') {
+            nextWorlds[side].player = plan.playerNext;
+            nextWorlds[side].boxes = plan.boxesNext.map(b => ({ ...b }));
+          } else if (plan.type === 'prism_dispersion') {
+            nextWorlds[side].player = plan.playerNext;
+            const latRed = plan.latRed;
+            const latBlue = plan.latBlue;
+            const redBox = { id: ++maxBoxId, pos: latRed, color: COLOR_RED };
+            const blueBox = { id: ++maxBoxId, pos: latBlue, color: COLOR_BLUE };
+            nextWorlds[side].boxes = curState.worlds[side].boxes
+              .filter(b => b.id !== plan.box.id)
+              .map(b => ({ ...b }))
+              .concat([redBox, blueBox]);
+
+            const dispEvent = {
+              type: 'prism_dispersion',
+              boardIndex: side,
+              prismPos: plan.beyond,
+              redPos: latRed,
+              bluePos: latBlue
+            };
+            if (side === 0) disp0 = dispEvent; else disp1 = dispEvent;
+          }
+        }
+
+        for (const { side, cp } of conduitPushes) {
+          if (!cp) continue;
+          const accepted = side === 0 ? accepted0 : accepted1;
+          if (!accepted) continue;
+
+          const otherSide = cp.toSide;
+          if (cp.transmutedTarget) {
+            nextWorlds[otherSide].boxes = nextWorlds[otherSide].boxes.map(b => {
+              if (b.id === cp.transmutedTarget) {
+                return { ...b, color: COLOR_PURPLE };
+              }
+              return b;
+            });
+          }
+          if (cp.transferredBox) {
+            nextWorlds[otherSide].boxes.push({ ...cp.transferredBox });
+          }
+        }
+      }
+
+      nextWorlds[0].boxes.sort((a, b) => a.pos - b.pos);
+      nextWorlds[1].boxes.sort((a, b) => a.pos - b.pos);
+
+      const changed = accepted0 || accepted1;
+
+      return {
+        next: { worlds: nextWorlds },
+        events: {
+          moves: [accepted0, accepted1],
+          pushes: [Boolean(pushed0 && accepted0), Boolean(pushed1 && accepted1)],
+          syntheses: [accepted0 ? synth0 : null, accepted1 ? synth1 : null],
+          dispersions: [disp0, disp1],
+          transits
+        },
+        changed,
+        blockedGate: Boolean(plan0.reason?.startsWith('gate_') || plan1.reason?.startsWith('gate_'))
+      };
+    }
+
+    function isSolved(cfg, curState) {
+      for (let s = 0; s < 2; s++) {
+        const b = cfg.boards[s];
+        const w = curState.worlds[s];
+        const bPositions = new Set(w.boxes.map(box => box.pos));
+        for (const g of b.goals) {
+          if (!bPositions.has(g)) return false;
+        }
+      }
+      const totalCovered = cfg.boards[0].goals.length + cfg.boards[1].goals.length;
+      const survivingBoxes = curState.worlds[0].boxes.length + curState.worlds[1].boxes.length;
+      return survivingBoxes >= totalCovered;
+    }
+
+    function updateHud(curState) {
+      let redCount = 0;
+      let blueCount = 0;
+      let purpleCount = 0;
+
+      for (let s = 0; s < 2; s++) {
+        for (const b of curState.worlds[s].boxes) {
+          if (b.color === COLOR_RED) redCount++;
+          else if (b.color === COLOR_BLUE) blueCount++;
+          else if (b.color === COLOR_PURPLE) purpleCount++;
+        }
+      }
+
+      const chipR = document.getElementById('hudChipRed');
+      const chipB = document.getElementById('hudChipBlue');
+      const chipP = document.getElementById('hudChipPurple');
+      const eqEl = document.getElementById('hudEquilibrium');
+
+      if (chipR) chipR.classList.toggle('active', redCount > 0);
+      if (chipB) chipB.classList.toggle('active', blueCount > 0);
+      if (chipP) chipP.classList.toggle('active', purpleCount > 0);
+      if (eqEl) {
+        const hasBoth = (redCount > 0 || blueCount > 0) && purpleCount > 0;
+        eqEl.classList.toggle('active', hasBoth);
+      }
+    }
+
+    function triggerSynthesisFx(gridEl, pos) {
+      const cells = gridEl.children;
+      if (!cells || !cells[pos]) return;
+      const targetCell = cells[pos];
+
+      // 1. Shockwave ring
+      const shockwave = document.createElement('div');
+      shockwave.className = 'synth-shockwave';
+      targetCell.appendChild(shockwave);
+
+      // 2. 8 Radial Imploding Particles
+      const count = 8;
+      const radius = 28;
+      for (let i = 0; i < count; i++) {
+        const angle = (i * 2 * Math.PI) / count;
+        const tx = Math.round(Math.cos(angle) * radius) + 'px';
+        const ty = Math.round(Math.sin(angle) * radius) + 'px';
+        const p = document.createElement('div');
+        const colorClass = i % 3 === 0 ? 'p-gold' : (i % 2 === 0 ? 'p-red' : 'p-blue');
+        p.className = 'synth-particle ' + colorClass;
+        p.style.setProperty('--tx', tx);
+        p.style.setProperty('--ty', ty);
+        targetCell.appendChild(p);
+      }
+
+      // 3. Pulse the HUD purple chip
+      const purpleChip = document.getElementById('hudChipPurple');
+      if (purpleChip) {
+        purpleChip.classList.remove('pulse');
+        void purpleChip.offsetWidth;
+        purpleChip.classList.add('pulse');
+      }
+
+      setTimeout(() => {
+        shockwave.remove();
+        targetCell.querySelectorAll('.synth-particle').forEach(el => el.remove());
+      }, 550);
+    }
+
+    function triggerDispersionFx(gridEl, pos) {
+      const cells = gridEl.children;
+      if (!cells || !cells[pos]) return;
+      const targetCell = cells[pos];
+
+      const flash = document.createElement('div');
+      flash.className = 'dispersion-shockwave';
+      targetCell.appendChild(flash);
+
+      setTimeout(() => {
+        flash.remove();
+      }, 450);
+    }
+
+    function selectTab(scheme) {
+      currentTab = scheme;
+      document.querySelectorAll('.scheme-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.scheme === scheme);
+      });
+      initSelectors();
+
+      const curLvl = DATASET.levels[curIdx];
+      if (curLvl.scheme !== scheme) {
+        const firstInScheme = DATASET.levels.findIndex(l => l.scheme === scheme);
+        if (firstInScheme !== -1) {
+          loadLevel(firstInScheme);
+        }
+      }
+    }
+
+    function initSelectors() {
+      const bar = document.getElementById('lvlSelector');
+      bar.innerHTML = '';
+
+      DATASET.levels.forEach((lvl, idx) => {
+        if (lvl.scheme !== currentTab) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'lvl-btn' + (idx === curIdx ? ' active' : '');
+        const tier = lvl.tier || 1;
+        btn.classList.add('tier-' + tier);
+
+        const badge = document.createElement('span');
+        badge.className = 'tier-badge t' + tier;
+        badge.textContent = 'T' + tier;
+
+        const label = document.createElement('span');
+        label.textContent = lvl.id.toUpperCase() + ' ' + lvl.title;
+
+        const steps = document.createElement('span');
+        steps.className = 'step-badge';
+        steps.textContent = (lvl.solutionLength || lvl.expectedSteps || lvl.solution?.length) + '步';
+
+        btn.appendChild(badge);
+        btn.appendChild(label);
+        btn.appendChild(steps);
+        btn.onclick = () => loadLevel(idx);
+        bar.appendChild(btn);
+      });
+    }
+
+    function loadLevel(idx) {
+      curIdx = idx;
+      pausePlay();
+
+      const lvl = DATASET.levels[curIdx];
+      if (lvl.scheme && lvl.scheme !== currentTab) {
+        currentTab = lvl.scheme;
+        document.querySelectorAll('.scheme-tab').forEach(tab => {
+          tab.classList.toggle('active', tab.dataset.scheme === currentTab);
+        });
+      }
+
+      initSelectors();
+
+      config = compile(lvl);
+      state = JSON.parse(JSON.stringify(config.initial));
+      history = [JSON.parse(JSON.stringify(state))];
+      replayStepIdx = 0;
+
+      document.getElementById('lvlTitle').textContent = lvl.id.toUpperCase() + ' · ' + lvl.title;
+      document.getElementById('lvlGoal').textContent = lvl.designGoal;
+      document.getElementById('refStepCounter').textContent = (lvl.solutionLength || lvl.expectedSteps || lvl.solution?.length) + ' 步';
+      document.getElementById('stepCounter').textContent = '0';
+      document.getElementById('msgToast').textContent = '';
+      document.getElementById('solvedBanner').style.display = 'none';
+
+      window.location.hash = '#' + lvl.id;
+      render();
+    }
+
+    function render(events = {}) {
+      document.getElementById('stepCounter').textContent = history.length - 1;
+      updateHud(state);
+
+      const synthEvents = events.syntheses || [];
+      const dispEvents = events.dispersions || [];
+
+      for (let side = 0; side < 2; side++) {
+        const board = config.boards[side];
+        const world = state.worlds[side];
+        const grid = document.getElementById('grid' + side);
+        grid.innerHTML = '';
+        grid.style.gridTemplateColumns = 'repeat(' + board.width + ', 38px)';
+
+        const synthAtThisSide = synthEvents[side];
+        const dispAtThisSide = dispEvents[side];
+
+        for (let y = 0; y < board.height; y++) {
+          for (let x = 0; x < board.width; x++) {
+            const pos = y * board.width + x;
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+
+            if (board.exteriorVoid && board.exteriorVoid.has(pos)) {
+              cell.classList.add('void');
+            } else if (!board.floor.includes(pos)) {
+              cell.classList.add('wall');
+            } else {
+              // Goal
+              if (board.goals.includes(pos)) cell.classList.add('goal');
+              // Gate
+              if (board.gates[pos]) cell.classList.add('gate-' + board.gates[pos]);
+              // Conduit
+              if (board.conduitPositions && board.conduitPositions.includes(pos)) {
+                cell.classList.add('conduit');
+              }
+              // Prism
+              if (board.prisms && board.prisms.has(pos)) {
+                cell.classList.add('prism');
+                const pSvg = document.createElement('div');
+                pSvg.className = 'prism-svg-container';
+                pSvg.innerHTML = SVG_PRISM;
+                cell.appendChild(pSvg);
+              }
+
+              // Player
+              if (world.player === pos) {
+                const pEl = document.createElement('div');
+                pEl.className = 'entity-player';
+                cell.appendChild(pEl);
+              }
+
+              // Box
+              const box = world.boxes.find(b => b.pos === pos);
+              if (box) {
+                const bEl = document.createElement('div');
+                bEl.className = 'entity-box';
+                if (box.color === COLOR_RED) {
+                  bEl.classList.add('red');
+                  bEl.innerHTML = SVG_RED;
+                } else if (box.color === COLOR_BLUE) {
+                  bEl.classList.add('blue');
+                  bEl.innerHTML = SVG_BLUE;
+                } else if (box.color === COLOR_PURPLE) {
+                  bEl.classList.add('purple');
+                  bEl.innerHTML = SVG_PURPLE;
+                  if (synthAtThisSide && synthAtThisSide.pos === pos) {
+                    bEl.classList.add('just-synthesized');
+                  }
+                } else {
+                  bEl.classList.add('neutral');
+                  bEl.innerHTML = '<span style="font-weight:800;font-size:14px;color:#fff;text-shadow:0 0 4px rgba(217,119,6,0.9);">$</span>';
+                }
+                if (board.goals.includes(pos)) bEl.classList.add('on-goal');
+                cell.appendChild(bEl);
+              }
+            }
+
+            grid.appendChild(cell);
+          }
+        }
+
+        if (synthAtThisSide) {
+          triggerSynthesisFx(grid, synthAtThisSide.pos);
+        }
+        if (dispAtThisSide) {
+          triggerDispersionFx(grid, dispAtThisSide.prismPos);
+        }
+      }
+
+      if (isSolved(config, state)) {
+        const isLastLevel = curIdx === DATASET.levels.length - 1;
+        document.getElementById('solvedTitle').textContent = isLastLevel ? '🏆 全 38 关完备通关！CONGRATULATIONS' : '🎉 目标达成！SOLVED';
+        document.getElementById('solvedDesc').textContent = isLastLevel 
+          ? '您已征服全部 38 关偏振矢量、跨界虫洞、棱镜分光与大师四象挑战！' 
+          : '当前步数 ' + (history.length - 1) + ' 步，所有偏振光斑目标已完美归位！';
+        document.getElementById('solvedBanner').style.display = 'flex';
+      } else {
+        document.getElementById('solvedBanner').style.display = 'none';
+      }
+    }
+
+    function handleMoveFeedback(res) {
+      if (res.blockedGate) {
+        showToast('🚫 偏振光栅阻挡：波长/矢量基底不匹配！');
+        return;
+      }
+
+      if (res.events?.syntheses?.some(Boolean)) {
+        const isConduit = res.events.syntheses.some(s => s?.type === 'conduit_collision');
+        if (isConduit) {
+          showToast('🌀 跨界虫洞碰撞！↙ 红 ⊗ ↘ 蓝 跨界聚合 ⟹ ↓ 紫晶汇聚！');
+        } else {
+          showToast('💥 矢量叠加对撞！↙ 红 ⊗ ↘ 蓝 ⟹ ↓ 紫晶超叠加！');
+        }
+      } else if (res.events?.dispersions?.some(Boolean)) {
+        showToast('💎 棱镜横向分光！↓ 紫晶 ⟹ ↙ 红 + ↘ 蓝 双极拓扑呼吸！');
+      } else if (res.events?.transits?.length > 0) {
+        showToast('🌌 跨界虫洞穿梭！箱子成功转移至对界！');
+      }
+    }
+
+    function doMove(d) {
+      if (replayTimer) pausePlay();
+      const res = step(config, state, d);
+      handleMoveFeedback(res);
+      if (res.changed) {
+        state = res.next;
+        history.push(JSON.parse(JSON.stringify(state)));
+        render(res.events);
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('msgToast');
+      toast.textContent = msg;
+      setTimeout(() => { if (toast.textContent === msg) toast.textContent = ''; }, 2400);
+    }
+
+    function undo() {
+      if (replayTimer) pausePlay();
+      if (history.length > 1) {
+        history.pop();
+        state = JSON.parse(JSON.stringify(history[history.length - 1]));
+        if (replayStepIdx > 0) replayStepIdx--;
+        render();
+      }
+    }
+
+    function reset() {
+      if (replayTimer) pausePlay();
+      replayStepIdx = 0;
+      state = JSON.parse(JSON.stringify(config.initial));
+      history = [JSON.parse(JSON.stringify(state))];
+      document.getElementById('msgToast').textContent = '';
+      render();
+    }
+
+    function nextLevel() {
+      if (curIdx + 1 < DATASET.levels.length) {
+        loadLevel(curIdx + 1);
+      } else {
+        loadLevel(0);
+      }
+    }
+
+    function togglePlay() {
+      if (replayTimer) {
+        pausePlay();
+      } else {
+        startPlay();
+      }
+    }
+
+    function startPlay() {
+      const sol = DATASET.levels[curIdx].solution;
+      document.getElementById('playBtn').textContent = '⏸ 暂停演示';
+      const delay = Math.max(120, Math.floor(350 / replaySpeed));
+
+      replayTimer = setInterval(() => {
+        if (replayStepIdx >= sol.length) {
+          pausePlay();
+          return;
+        }
+        const move = sol[replayStepIdx++];
+        const res = step(config, state, move);
+        handleMoveFeedback(res);
+        state = res.next;
+        history.push(JSON.parse(JSON.stringify(state)));
+        render(res.events);
+
+        if (isSolved(config, state)) {
+          pausePlay();
+        }
+      }, delay);
+    }
+
+    function pausePlay() {
+      if (replayTimer) {
+        clearInterval(replayTimer);
+        replayTimer = null;
+      }
+      document.getElementById('playBtn').textContent = '▶ 演示官方解 (Space)';
+    }
+
+    function stepForward() {
+      const sol = DATASET.levels[curIdx].solution;
+      if (replayStepIdx < sol.length) {
+        const move = sol[replayStepIdx++];
+        const res = step(config, state, move);
+        handleMoveFeedback(res);
+        state = res.next;
+        history.push(JSON.parse(JSON.stringify(state)));
+        render(res.events);
+      }
+    }
+
+    function setSpeed(sp) {
+      replaySpeed = sp;
+      if (replayTimer) {
+        pausePlay();
+        startPlay();
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const key = e.key;
+      if (key === 'ArrowUp' || key === 'w' || key === 'W') { e.preventDefault(); doMove('U'); }
+      else if (key === 'ArrowDown' || key === 's' || key === 'S') { e.preventDefault(); doMove('D'); }
+      else if (key === 'ArrowLeft' || key === 'a' || key === 'A') { e.preventDefault(); doMove('L'); }
+      else if (key === 'ArrowRight' || key === 'd' || key === 'D') { e.preventDefault(); doMove('R'); }
+      else if (key === 'z' || key === 'Z') { e.preventDefault(); undo(); }
+      else if (key === 'r' || key === 'R') { e.preventDefault(); reset(); }
+      else if (key === ' ') { e.preventDefault(); togglePlay(); }
+    });
+
+    const initHash = window.location.hash.replace('#', '');
+    const hashIdx = DATASET.levels.findIndex(l => l.id.toLowerCase() === initHash.toLowerCase());
+    loadLevel(hashIdx !== -1 ? hashIdx : 0);
+  </script>
+</body>
+</html>
