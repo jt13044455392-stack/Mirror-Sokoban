@@ -6,44 +6,44 @@
   <title>机制试验 · 本界填坑成路，对界生成石柱 (Pit-to-Pillar)</title>
   <style>
     :root {
-      --bg-color: #f7f4ed;
-      --card-bg: #ffffff;
-      --text-main: #2c2925;
-      --text-sub: #767067;
-      --board-a-bg: #fdfaf3;
-      --board-a-border: #d9cdb8;
-      --board-b-bg: #f2f7f9;
-      --board-b-border: #bcd2db;
-      --wall-color: #4a453e;
-      --floor-color: #ffffff;
-      --player-a: #d35400;
-      --player-b: #2980b9;
-      --box-color: #c98836;
-      --goal-color: #27ae60;
+      --bg-color: #e7e0d3;
+      --card-bg: #f4efe5;
+      --text-main: #2b2926;
+      --text-sub: #70675d;
+      --board-a-bg: #f4efe5;
+      --board-a-border: #b8ae9e;
+      --board-b-bg: #f4efe5;
+      --board-b-border: #b8ae9e;
+      --wall-color: #5b554d;
+      --floor-color: #ded6c8;
+      --player-a: #cc7151;
+      --player-b: #558bb4;
+      --box-color: #c68d54;
+      --goal-color: #e8c675;
       --pit-color: #243342;
       --pillar-color: #546e7a;
-      --accent: #2c3e50;
+      --accent: #2b2926;
 
-      --tier-1-color: #27ae60;
-      --tier-1-bg: #eafaf1;
+      --tier-1-color: #2e7d32;
+      --tier-1-bg: #f1f8f3;
       --tier-1-border: #a9dfbf;
 
-      --tier-2-color: #2980b9;
+      --tier-2-color: #286480;
       --tier-2-bg: #ebf5fb;
       --tier-2-border: #aed6f1;
 
-      --tier-3-color: #d35400;
+      --tier-3-color: #cc7151;
       --tier-3-bg: #fef5e7;
       --tier-3-border: #f9e79f;
 
-      --tier-4-color: #8e44ad;
+      --tier-4-color: #6a5b9b;
       --tier-4-bg: #f4ecf7;
       --tier-4-border: #d2b4de;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
       background-color: var(--bg-color);
       color: var(--text-main);
       display: flex;
@@ -51,6 +51,15 @@
       align-items: center;
       min-height: 100vh;
       padding: 24px 16px 40px;
+    }
+
+    body.embedded {
+      padding: 0 0 16px;
+      background: transparent;
+    }
+
+    body.embedded header {
+      display: none;
     }
 
     header {
@@ -109,124 +118,142 @@
       margin-bottom: 14px;
     }
 
+    /* Pool Switcher */
+    .pool-nav {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      margin: 10px 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .pool-btn {
+      background: #fdfaf4;
+      border: 1px solid #b8ae9e;
+      color: #70675d;
+      padding: 5px 14px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pool-btn:hover {
+      background: #2b2926;
+      color: #f7f2e9;
+      border-color: #2b2926;
+    }
+
+    .pool-btn.active {
+      background: #2b2926;
+      color: #f7f2e9;
+      border-color: #2b2926;
+    }
+
     /* Tier Tabs */
     .tier-nav {
       display: flex;
-      gap: 8px;
-      margin: 10px 0 12px;
+      gap: 6px;
+      margin: 0 0 10px;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: flex-start;
     }
 
     .tier-tab-btn {
-      background: var(--card-bg);
-      border: 1px solid #d0c8b8;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
+      background: #fdfaf4;
+      border: 1px solid #b8ae9e;
+      color: #70675d;
+      padding: 4px 10px;
+      border-radius: 3px;
+      font-size: 11px;
       cursor: pointer;
       font-weight: 600;
       transition: all 0.15s ease;
-      color: var(--text-main);
     }
 
     .tier-tab-btn:hover {
-      background: #eee8da;
-      border-color: #b5ac99;
+      background: #2b2926;
+      color: #f7f2e9;
+      border-color: #2b2926;
     }
 
     .tier-tab-btn.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-      box-shadow: 0 2px 6px rgba(44, 62, 80, 0.25);
+      background: #2b2926;
+      color: #f7f2e9;
+      border-color: #2b2926;
+      font-weight: 700;
     }
-
-    .tier-tab-btn[data-tier="1"].active { background: var(--tier-1-color); border-color: var(--tier-1-color); }
-    .tier-tab-btn[data-tier="2"].active { background: var(--tier-2-color); border-color: var(--tier-2-color); }
-    .tier-tab-btn[data-tier="3"].active { background: var(--tier-3-color); border-color: var(--tier-3-color); }
-    .tier-tab-btn[data-tier="4"].active { background: var(--tier-4-color); border-color: var(--tier-4-color); }
 
     /* Level Navigation Grid */
     .level-nav-box {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-width: 1040px;
+      max-width: 1120px;
       width: 100%;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .level-nav {
       display: flex;
-      gap: 6px;
+      gap: 6px 8px;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
+      padding: 8px 0 14px;
+      border-bottom: 1px solid #b8ae9e;
     }
 
     .level-btn {
+      min-width: 44px;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid #b8ae9e;
+      background: #fdfaf4;
+      color: #70675d;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 2px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: var(--card-bg);
-      border: 1px solid #d5cfc4;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 13px;
+      justify-content: center;
       cursor: pointer;
-      font-weight: 500;
       transition: all 0.15s ease;
-      color: var(--text-main);
       user-select: none;
     }
 
     .level-btn:hover {
-      background: #f4ede0;
-      border-color: #b5ac99;
-    }
-
-    .level-btn .lvl-num {
-      font-weight: 700;
-      font-size: 11px;
-      padding: 1px 5px;
-      border-radius: 4px;
-      background: #ece6da;
-      color: #555;
-    }
-
-    .level-btn .lvl-title {
-      font-size: 12px;
+      border-color: #2b2926;
+      background: #2b2926;
+      color: #f7f2e9;
     }
 
     .level-btn.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      border-color: #2b2926;
+      background: #2b2926;
+      color: #f7f2e9;
+      font-weight: 700;
     }
 
-    .level-btn.active .lvl-num {
-      background: rgba(255, 255, 255, 0.25);
-      color: #fff;
+    .level-btn.solved {
+      border-color: #2e7d32;
+      background: #f1f8f3;
+      color: #1e6b23;
+      font-weight: 700;
     }
-
-    .level-btn[data-tier="1"] { border-left: 3px solid var(--tier-1-color); }
-    .level-btn[data-tier="2"] { border-left: 3px solid var(--tier-2-color); }
-    .level-btn[data-tier="3"] { border-left: 3px solid var(--tier-3-color); }
-    .level-btn[data-tier="4"] { border-left: 3px solid var(--tier-4-color); }
 
     /* Main Stage */
     .main-stage {
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: var(--card-bg);
-      border: 1px solid #e2ddd3;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-      max-width: 1040px;
+      background: #f4efe5;
+      border: 1px solid #b8ae9e;
+      border-radius: 4px;
+      padding: 24px 20px 20px;
+      box-shadow: 0 14px 36px #685c4b22;
+      max-width: 1120px;
       width: 100%;
     }
 
@@ -349,43 +376,53 @@
 
     .grid {
       display: grid;
-      gap: 2px;
-      padding: 6px;
-      border-radius: 8px;
-      background: #d8d0c2;
-    }
-
-    .board-a .grid {
-      background: var(--board-a-border);
-    }
-    .board-b .grid {
-      background: var(--board-b-border);
+      border: 4px solid #514c43;
+      background: #cfc5b5;
+      box-shadow: inset 0 0 0 1px #897e6f;
+      border-radius: 0;
+      padding: 0;
+      gap: 0;
     }
 
     .cell {
       width: 38px;
       height: 38px;
-      border-radius: 4px;
+      border-radius: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 16px;
       position: relative;
-      background: var(--floor-color);
+      background-color: #ded6c8;
+      background-image: linear-gradient(45deg, #cfc5b552 25%, transparent 25%), linear-gradient(-45deg, #cfc5b552 25%, transparent 25%);
+      background-size: 8px 8px;
+      border-right: 1px solid #b6ab9c;
+      border-bottom: 1px solid #b6ab9c;
       user-select: none;
     }
 
-    .cell.wall { background: var(--wall-color); }
+    .board-b .cell:not(.wall):not(.pit):not(.filled-pit):not(.pillar) {
+      background-color: #d0dde0;
+      background-image: linear-gradient(45deg, #aac3ce4d 25%, transparent 25%), linear-gradient(-45deg, #aac3ce4d 25%, transparent 25%);
+    }
+
+    .cell.wall {
+      background: #5b554d;
+      border-color: #423d37;
+      box-shadow: inset 0 0 0 2px #6b645a;
+      background-image: none;
+    }
     .cell.pit {
-      background: var(--pit-color);
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
-      color: #ecf0f1;
-      font-size: 11px;
-      font-weight: bold;
+      background: #1e293b;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.65);
+      color: #f8fafc;
+      font-size: 12px;
+      font-weight: 800;
     }
     .cell.filled-pit {
-      background: #7f8c8d;
+      background: #64748b;
       box-shadow: inset 0 0 3px rgba(0,0,0,0.4);
+      color: #f8fafc;
     }
     .cell.filled-pit::after {
       content: '';
@@ -396,27 +433,35 @@
       border-radius: 2px;
     }
     .cell.pillar {
-      background: var(--pillar-color);
+      background: #546e7a;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      border: 2px solid #34495e;
+      border: 2px solid #2c3e50;
       color: #ffffff;
-      font-size: 11px;
-      font-weight: bold;
+      font-size: 12px;
+      font-weight: 800;
     }
     .cell.pillar-target {
-      outline: 2px dashed #95a5a6;
-      outline-offset: -3px;
+      outline: 2px dashed #346e98;
+      outline-offset: -4px;
     }
-    .cell.goal {
-      background: #e8f8f5;
+    .pillar-target-label {
+      position: absolute;
+      font-size: 11px;
+      font-weight: 800;
+      color: #346e98;
+      opacity: 0.85;
+      pointer-events: none;
+      z-index: 1;
     }
     .cell.goal::after {
       content: '';
-      width: 12px;
-      height: 12px;
+      width: 44%;
+      height: 44%;
       border-radius: 50%;
-      background: var(--goal-color);
-      opacity: 0.6;
+      background: #e8c675;
+      border: 3px solid #8a7251;
+      position: absolute;
+      box-sizing: border-box;
     }
 
     .entity-player {
@@ -424,34 +469,35 @@
       height: 26px;
       border-radius: 50%;
       z-index: 2;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      border: 2px solid #432d27;
+      box-shadow: 1px 2px 0 #39251c55;
     }
-    .board-a .entity-player { background: var(--player-a); }
-    .board-b .entity-player { background: var(--player-b); }
+    .board-a .entity-player { background: #cc7151; }
+    .board-b .entity-player { background: #558bb4; border-color: #1f4d70; }
 
     .entity-box {
       width: 28px;
       height: 28px;
-      background: var(--box-color);
-      border-radius: 4px;
-      border: 2px solid #8e581e;
+      background: linear-gradient(135deg, #c68d54 0 47%, #b47642 48% 52%, #cf9a5c 53%);
+      border-radius: 2px;
+      border: 2px solid #5a3925;
       z-index: 2;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 10px;
-      color: #fff;
+      color: transparent;
       font-weight: bold;
     }
 
     .entity-box.on-goal {
-      background: #27ae60;
-      border-color: #1e8449;
+      background: #2e7d32;
+      border-color: #1e6b23;
     }
     .entity-box.on-goal::after {
       content: '✓';
-      font-size: 12px;
+      font-size: 14px;
       color: #fff;
     }
 
@@ -466,12 +512,12 @@
     }
 
     .solved-banner {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background: #f1f8f3;
+      color: #1e6b23;
+      border: 1px solid #a9dfbf;
       padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 15px;
+      border-radius: 4px;
+      font-size: 14px;
       font-weight: 700;
       margin: 8px 0;
       display: none;
@@ -480,11 +526,11 @@
     }
 
     .solved-banner button {
-      background: #155724;
+      background: #1e6b23;
       color: #fff;
       border: none;
       padding: 4px 12px;
-      border-radius: 4px;
+      border-radius: 2px;
       font-size: 12px;
       cursor: pointer;
       font-weight: 600;
@@ -500,41 +546,38 @@
     }
 
     .btn {
-      background: var(--card-bg);
-      border: 1px solid #d0c8b8;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 13px;
+      height: 38px;
+      padding: 0 14px;
+      border: 1px solid #aaa092;
+      background: #f3ede2;
+      color: #504a42;
       cursor: pointer;
+      font-size: 13px;
       font-weight: 600;
+      border-radius: 3px;
       transition: all 0.15s ease;
-      color: var(--text-main);
       user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .btn:hover {
-      background: #eee8da;
-      border-color: #b5ac99;
+      background: #e8dfd2;
     }
 
-    .btn:active {
-      transform: translateY(1px);
+    .btn.btn-primary {
+      background: #2b2926;
+      color: #f7f2e9;
+      border-color: #2b2926;
+    }
+    .btn.btn-primary:hover {
+      background: #5e574e;
     }
 
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-    }
-
-    .btn-primary:hover {
-      background: #34495e;
-      border-color: #34495e;
-    }
-
-    .btn-primary.playing {
-      background: #e67e22;
-      border-color: #d35400;
+    .btn.btn-primary.playing {
+      background: #c68d54;
+      border-color: #8e581e;
     }
 
     .btn-speed {
@@ -566,31 +609,38 @@
   </style>
 </head>
 <body>
+<main>
 
   <header>
     <div class="header-top">
-      <div class="badge">独立机制验证沙盒 · 20 关完整体系</div>
+      <div class="badge" id="poolBadge">机制试验 · 正选 20 关体系</div>
       <a class="back-link" href="index.html" target="_top">返回主站点 ↗</a>
     </div>
     <h1>本界填坑成路，对界生成石柱 (Pit-to-Pillar)</h1>
     <p class="subtitle">
       两界同向输入 · 实体独立结算 · 推箱入坑消耗生成路基 · 对界配对点生成石柱 · 占位冲突严格防杀
     </p>
-
-    <!-- 4-Tier Navigation Tabs -->
-    <nav class="tier-nav" id="tierNav" aria-label="选择关卡梯队">
-      <button class="tier-tab-btn active" data-tier="all">全部关卡 (1–20)</button>
-      <button class="tier-tab-btn" data-tier="1">Tier 1 · 入门基础 (1–5)</button>
-      <button class="tier-tab-btn" data-tier="2">Tier 2 · 多坑协同 (6–10)</button>
-      <button class="tier-tab-btn" data-tier="3">Tier 3 · 防杀调相 (11–15)</button>
-      <button class="tier-tab-btn" data-tier="4">Tier 4 · 经典融合 (16–20)</button>
-    </nav>
-
-    <!-- Level Navigation Buttons -->
-    <div class="level-nav-box">
-      <div class="level-nav" id="levelNav"></div>
-    </div>
   </header>
+
+  <!-- Pool Switcher -->
+  <div class="pool-nav" id="poolNav">
+    <button class="pool-btn active" id="btnPoolPrimary">正选精选关卡 (20关)</button>
+    <button class="pool-btn" id="btnPoolSecondary">100关海量扩展池</button>
+  </div>
+
+  <!-- 4-Tier Navigation Tabs -->
+  <nav class="tier-nav" id="tierNav" aria-label="选择关卡梯队">
+    <button class="tier-tab-btn active" data-tier="all">全部关卡 (1–20)</button>
+    <button class="tier-tab-btn" data-tier="1">Tier 1 · 入门基础 (1–5)</button>
+    <button class="tier-tab-btn" data-tier="2">Tier 2 · 多坑协同 (6–10)</button>
+    <button class="tier-tab-btn" data-tier="3">Tier 3 · 防杀调相 (11–15)</button>
+    <button class="tier-tab-btn" data-tier="4">Tier 4 · 经典融合 (16–20)</button>
+  </nav>
+
+  <!-- Level Navigation Buttons -->
+  <div class="level-nav-box">
+    <div class="level-nav" id="levelNav"></div>
+  </div>
 
   <div class="main-stage">
     <div class="status-bar">
@@ -659,19 +709,36 @@
       <div>立柱: <b>石灰方块 (P1, P2)</b></div>
     </div>
   </div>
+</main>
 
   <script>
-    const DATA = {"version":"1.0.0","generatedAt":"2026-09-10T14:31:30.689Z","ruleVersion":"CG-PIT-PILLAR-1","count":20,"levels":[{"id":"pp-01","title":"填坑成路","order":1,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"一次填坑、一次对界立柱，直观理解一边开路一边封路的地形突变","boards":[["########","#@ $ _ #","#   #  #","# $   .#","########"],["########","#@     #","#  $ . #","#      #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":5,"y":3,"pos":29}}],"solution":"","solutionLength": 0,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":17864,"solveTimeMs":127,"replayedSuccessfully":true,"pitFillEvents":[{"step":6,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":25093}}}},{"id":"pp-02","title":"借柱停顿","order":2,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"对界保留真实绕行环路，新石柱提供关键的单侧撞墙停顿点以完成调相绕背","boards":[["########","#@ $ _ #","#   #  #","# $  . #","########"],["########","#@     #","# #### #","#   $. #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":6,"y":2,"pos":22}}],"solution":"","solutionLength": 0,"expectedSteps":11,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":1078,"solveTimeMs":5,"replayedSuccessfully":true,"pitFillEvents":[{"step":11,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":9200}}}},{"id":"pp-03","title":"暂缓施工","order":3,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"立柱位于对界必经要道，必须先运送对界实体通过，再行填坑施工","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","# @   #","# $   #","##   ##","#  .  #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":3,"pos":23}}],"solution":"","solutionLength": 0,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":11778,"solveTimeMs":61,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":19140}}}},{"id":"pp-04","title":"选哪一个坑","order":4,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"有限工程箱面对两个不同坑位，考验双界地形权衡与非线性路线规划","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["#########","#@      #","#  $  . #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":3,"y":2,"pos":21}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":6,"y":3,"pos":33}}],"solution":"","solutionLength": 0,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":36588,"solveTimeMs":186,"replayedSuccessfully":true,"pitFillEvents":[{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":104038}}}},{"id":"pp-05","title":"经典仓库融合","order":5,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban紧凑多箱骨架，地形突变深度干涉经典让位与归位计划","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["######","# .  #","#  ###","#*@  #","#  $ #","#  ###","######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":2,"pos":13}}],"solution":"","solutionLength": 0,"expectedSteps":35,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":61489,"solveTimeMs":460,"replayedSuccessfully":true,"pitFillEvents":[{"step":29,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":55200}}}},{"id":"pp-06","title":"连环暗坑","order":6,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"同界双坑递进施工，首坑铺路运送次箱，双柱对界先后闭合","boards":[["#########","#@ $ _  #","#  $ #  #","# $  _ .#","#########"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":6,"y":1,"pos":15}},{"id":"P2","pit":{"side":0,"x":5,"y":3,"pos":32},"pillar":{"side":1,"x":1,"y":2,"pos":19}}],"solution":"","solutionLength": 0,"expectedSteps":19,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":26734,"solveTimeMs":153,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]},{"step":11,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11491}}}},{"id":"pp-07","title":"跨界飞石","order":7,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵，形成跨界飞石回环","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":4,"y":2,"pos":20}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":4,"y":1,"pos":12}}],"solution":"","solutionLength": 0,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":11320,"solveTimeMs":77,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":10,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":5957}}}},{"id":"pp-08","title":"桥与栓","order":8,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"首坑铺路搭桥以渡绝壁，次坑筑栓刹车以抑冲量，双效合一","boards":[["###########","#@ $ _    #","#  # #    #","# $ _   $.#","###########"],["###########","#@        #","#  #####  #","#  .   $  #","#         #","###########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":16},"pillar":{"side":1,"x":9,"y":1,"pos":20}},{"id":"P2","pit":{"side":0,"x":4,"y":3,"pos":37},"pillar":{"side":1,"x":1,"y":3,"pos":34}}],"solution":"","solutionLength": 0,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":39480,"solveTimeMs":216,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":18414}}}},{"id":"pp-09","title":"漏斗回廊","order":9,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"非对称漏斗：双坑依次封堵对界分流通路，压制回旋空间逼入单行道","boards":[["###########","#@ $ _    #","#  # #    #","# $ _   $.#","###########"],["###########","#@        #","#  ### ## #","# .   $   #","###########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":16},"pillar":{"side":1,"x":9,"y":1,"pos":20}},{"id":"P2","pit":{"side":0,"x":4,"y":3,"pos":37},"pillar":{"side":1,"x":1,"y":2,"pos":23}}],"solution":"","solutionLength": 0,"expectedSteps":26,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":42349,"solveTimeMs":248,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]},{"step":26,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":4006}}}},{"id":"pp-10","title":"逆序死锁","order":10,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"定序陷阱：次序不可逆反，若逆序填坑则对界立柱卡死推运航道触发全盘死锁","boards":[["#########","#@ $ _  #","#    #  #","# $  _$.#","#########"],["#########","#@      #","#  ###  #","# . $   #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":7,"y":1,"pos":16}},{"id":"P2","pit":{"side":0,"x":5,"y":3,"pos":32},"pillar":{"side":1,"x":3,"y":3,"pos":30}}],"solution":"","solutionLength": 0,"expectedSteps":18,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":38896,"solveTimeMs":226,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":16,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":76157}}}},{"id":"pp-11","title":"借身拒推","order":11,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"肉身压柱防杀：利用对界肉身占位拒绝推坑，化推为定格以完成绝对调相","boards":[["########","#@ $ _ #","#   #  #","# $  . #","########"],["########","#@   # #","#  #   #","#  $.  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":3,"pos":26}}],"solution":"","solutionLength": 0,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3589,"solveTimeMs":18,"replayedSuccessfully":true,"pitFillEvents":[{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10207}}}},{"id":"pp-12","title":"重箱压顶","order":12,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"箱体物理抑制：对界关键任务箱压制立柱生成点，规避过早筑柱破坏推运走廊","boards":[["##########","#@ $ _   #","#   #    #","# $    . #","##########"],["##########","#@       #","# ###### #","# . $    #","##########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":15},"pillar":{"side":1,"x":4,"y":3,"pos":34}}],"solution":"","solutionLength": 0,"expectedSteps":25,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":31684,"solveTimeMs":240,"replayedSuccessfully":true,"pitFillEvents":[{"step":25,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":38898}}}},{"id":"pp-13","title":"节流阀门","order":13,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"环路节流阀：对界周期性巡回占位形成时序阀门，仅特定相位拍点方可注坑通关","boards":[["#########","#@ $ _  #","#   #   #","# $   . #","#########"],["#########","#@      #","#  ###  #","# . $   #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":4,"y":1,"pos":13}}],"solution":"","solutionLength": 0,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":21029,"solveTimeMs":106,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":113422}}}},{"id":"pp-14","title":"双向竞态防杀","order":14,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向竞态互锁：双界互将立柱刺入对方推坑主航道，必须交错解耦规避双向闭锁","boards":[["#########","#@ $ _  #","#  ###  #","# $   . #","#########"],["#########","#@      #","#  $ ## #","# $ _  .#","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":3,"pos":28}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":31},"pillar":{"side":0,"x":1,"y":2,"pos":19}}],"solution":"","solutionLength": 0,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":15681,"solveTimeMs":85,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":4750}}}},{"id":"pp-15","title":"临界绞索","order":15,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"临界绞索防杀：对界处于闭合死胡同内，必须在立柱断头闸落下前极限突围","boards":[["#########","#@ $ _  #","#   #   #","# $   . #","#########"],["#########","#@  #   #","# $   . #","#   #   #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":4,"y":2,"pos":22}}],"solution":"","solutionLength": 0,"expectedSteps":18,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":35008,"solveTimeMs":200,"replayedSuccessfully":true,"pitFillEvents":[{"step":18,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":53881}}}},{"id":"pp-16","title":"双子回环","order":16,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban 3宽回廊骨架，长纵深绕行中借柱调相规避死锁","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","###  ####","#     $ #","# #  #$ #","# . .#@ #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solution":"","solutionLength": 0,"expectedSteps":45,"audit":{"status":"SOLVED_REPLAYED","exact":false,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"PRIORITY_BEAM","exploredStates":175376,"solveTimeMs":2205,"replayedSuccessfully":true,"pitFillEvents":[{"step":43,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":170256}}}},{"id":"pp-17","title":"偏心挤压","order":17,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban 9侧向置换仓，紧凑走廊中借柱调相规避死角","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","##.   ##","##@$$  #","###    #","# ##   #","#  ##.##","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":5,"y":3,"pos":29}}],"solution":"","solutionLength": 0,"expectedSteps":22,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":88593,"solveTimeMs":677,"replayedSuccessfully":true,"pitFillEvents":[{"step":20,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":126540}}}},{"id":"pp-18","title":"经典回廊","order":18,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban 14高密回廊，深度调相与死锁陷阱中借柱完成归位","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","#     #","# # # #","#. $*@#","#   ###","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}}],"solution":"","solutionLength": 0,"expectedSteps":58,"audit":{"status":"SOLVED_REPLAYED","exact":false,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"PRIORITY_BEAM","exploredStates":132685,"solveTimeMs":1861,"replayedSuccessfully":true,"pitFillEvents":[{"step":58,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":89831}}}},{"id":"pp-19","title":"镜像置换","order":19,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban 15转角置换，深层相位债务与狭缝让位中完成填坑归位","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","######@##","#    .* #","#   #   #","#####$# #","#####   #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":7,"y":5,"pos":52}}],"solution":"","solutionLength": 0,"expectedSteps":43,"audit":{"status":"SOLVED_REPLAYED","exact":false,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"PRIORITY_BEAM","exploredStates":148926,"solveTimeMs":2003,"replayedSuccessfully":true,"pitFillEvents":[{"step":43,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":109895}}}},{"id":"pp-20","title":"终极圣堂","order":20,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"终极圣堂：融合经典Microban 20双室互锁骨架，50+步宏大推运中达成完美归位","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","#     ###","#  @$$..#","#### ## #","###     #","###  ####","###  ####","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":10}}],"solution":"","solutionLength": 0,"expectedSteps":63,"audit":{"status":"SOLVED_REPLAYED","exact":false,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"PRIORITY_BEAM","exploredStates":303208,"solveTimeMs":3273,"replayedSuccessfully":true,"pitFillEvents":[{"step":63,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":285650}}}}]};
+    const DATA_PRIMARY = {"version":"1.0.0","generatedAt":"2026-09-25T13:29:32.404Z","ruleVersion":"CG-PIT-PILLAR-1","count":20,"levels":[{"id":"pp-01","title":"填坑成路","order":1,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"一次填坑、一次对界立柱，直观理解一边开路一边封路的地形突变","boards":[["########","#@ $ _ #","#   #  #","# $   .#","########"],["########","#@     #","#  $ . #","#      #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":5,"y":3,"pos":29}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":17864,"solveTimeMs":134,"replayedSuccessfully":true,"pitFillEvents":[{"step":6,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":25093}}}},{"id":"pp-02","title":"借柱停顿","order":2,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"对界保留真实绕行环路，新石柱提供关键的单侧撞墙停顿点以完成调相绕背","boards":[["########","#@ $ _ #","#  ### #","#   $. #","########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":1699,"solveTimeMs":8,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":3607}}}},{"id":"pp-03","title":"暂缓施工","order":3,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"立柱位于对界必经要道，必须先运送对界实体通过，再行填坑施工","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","# @   #","# $   #","##   ##","#  .  #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":3,"pos":23}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":11778,"solveTimeMs":71,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":19140}}}},{"id":"pp-04","title":"选哪一个坑","order":4,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"有限工程箱面对两个不同坑位，考验双界地形权衡与非线性路线规划","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["#########","#@      #","#  $  . #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":3,"y":2,"pos":21}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":6,"y":3,"pos":33}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":36588,"solveTimeMs":190,"replayedSuccessfully":true,"pitFillEvents":[{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":104038}}}},{"id":"pp-05","title":"节流阀门","order":5,"tier":1,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"环路节流阀：对界周期性巡回占位形成时序阀门，仅特定相位拍点方可注坑通关","boards":[["#########","#@ $ _  #","#   #   #","# $   . #","#########"],["#########","#@      #","#  ###  #","# . $   #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":4,"y":1,"pos":13}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":21029,"solveTimeMs":98,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":113422}}}},{"id":"pp-06","title":"连环暗坑","order":6,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"同界双坑递进施工，首坑铺路运送次箱，双柱对界先后闭合","boards":[["#########","#@ $ _  #","#  $ #  #","# $  _ .#","#########"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":6,"y":1,"pos":15}},{"id":"P2","pit":{"side":0,"x":5,"y":3,"pos":32},"pillar":{"side":1,"x":1,"y":2,"pos":19}}],"solutionLength":19,"expectedSteps":19,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":26734,"solveTimeMs":158,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]},{"step":11,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11491}}}},{"id":"pp-07","title":"跨界飞石","order":7,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵，形成跨界飞石回环","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":4,"y":2,"pos":20}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":4,"y":1,"pos":12}}],"solutionLength":21,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":11320,"solveTimeMs":77,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":10,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":5957}}}},{"id":"pp-08","title":"桥与栓","order":8,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"首坑铺路搭桥以渡绝壁，次坑筑栓刹车以抑冲量，双效合一","boards":[["###########","#@ $ _    #","#  # #    #","# $ _   $.#","###########"],["###########","#@        #","#  #####  #","#  .   $  #","#         #","###########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":16},"pillar":{"side":1,"x":9,"y":1,"pos":20}},{"id":"P2","pit":{"side":0,"x":4,"y":3,"pos":37},"pillar":{"side":1,"x":1,"y":3,"pos":34}}],"solutionLength":21,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":39480,"solveTimeMs":217,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":18414}}}},{"id":"pp-09","title":"逆序死锁","order":9,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"定序陷阱：次序不可逆反，若逆序填坑则对界立柱卡死推运航道触发全盘死锁","boards":[["#########","#@ $ _  #","#    #  #","# $  _$.#","#########"],["#########","#@      #","#  ###  #","# . $   #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":7,"y":1,"pos":16}},{"id":"P2","pit":{"side":0,"x":5,"y":3,"pos":32},"pillar":{"side":1,"x":3,"y":3,"pos":30}}],"solutionLength":18,"expectedSteps":18,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":38896,"solveTimeMs":262,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":16,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":76157}}}},{"id":"pp-10","title":"漏斗回廊","order":10,"tier":2,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"非对称漏斗：双坑依次封堵对界分流通路，压制回旋空间逼入单行道","boards":[["###########","#@ $ _    #","#  # #    #","# $ _   $.#","###########"],["###########","#@        #","#  ### ## #","# .   $   #","###########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":16},"pillar":{"side":1,"x":9,"y":1,"pos":20}},{"id":"P2","pit":{"side":0,"x":4,"y":3,"pos":37},"pillar":{"side":1,"x":1,"y":2,"pos":23}}],"solutionLength":26,"expectedSteps":26,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":42349,"solveTimeMs":507,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]},{"step":26,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":4006}}}},{"id":"pp-11","title":"借身拒推","order":11,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"肉身压柱防杀：利用对界肉身占位拒绝推坑，化推为定格以完成绝对调相","boards":[["########","#@ $ _ #","#   #  #","# $  . #","########"],["########","#@   # #","#  #   #","#  $.  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":3,"pos":26}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3589,"solveTimeMs":18,"replayedSuccessfully":true,"pitFillEvents":[{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10207}}}},{"id":"pp-12","title":"双向竞态防杀","order":12,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向竞态互锁：双界互将立柱刺入对方推坑主航道，必须交错解耦规避双向闭锁","boards":[["#########","#@ $ _  #","#  ###  #","# $   . #","#########"],["#########","#@      #","#  $ ## #","# $ _  .#","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":3,"pos":28}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":31},"pillar":{"side":0,"x":1,"y":2,"pos":19}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":15681,"solveTimeMs":88,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":4750}}}},{"id":"pp-13","title":"临界绞索","order":13,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"临界绞索防杀：对界处于闭合死胡同内，必须在立柱断头闸落下前极限突围","boards":[["#########","#@ $ _  #","#   #   #","# $   . #","#########"],["#########","#@  #   #","# $   . #","#   #   #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":4,"y":2,"pos":22}}],"solutionLength":18,"expectedSteps":18,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":35008,"solveTimeMs":191,"replayedSuccessfully":true,"pitFillEvents":[{"step":18,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":53881}}}},{"id":"pp-14","title":"偏心挤压","order":14,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban 9侧向置换仓，紧凑走廊中借柱调相规避死角","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","##.   ##","##@$$  #","###    #","# ##   #","#  ##.##","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":5,"y":3,"pos":29}}],"solutionLength":22,"expectedSteps":22,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":88593,"solveTimeMs":681,"replayedSuccessfully":true,"pitFillEvents":[{"step":20,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":126540}}}},{"id":"pp-15","title":"重箱压顶","order":15,"tier":3,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"箱体物理抑制：对界关键任务箱压制立柱生成点，规避过早筑柱破坏推运走廊","boards":[["##########","#@ $ _   #","#   #    #","# $    . #","##########"],["##########","#@       #","# ###### #","# . $    #","##########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":15},"pillar":{"side":1,"x":4,"y":3,"pos":34}}],"solutionLength":25,"expectedSteps":25,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":31684,"solveTimeMs":283,"replayedSuccessfully":true,"pitFillEvents":[{"step":25,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":38898}}}},{"id":"pp-16","title":"经典仓库融合","order":16,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban紧凑多箱骨架，地形突变深度干涉经典让位与归位计划","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["######","# .  #","#  ###","#*@  #","#  $ #","#  ###","######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":2,"pos":13}}],"solutionLength":35,"expectedSteps":35,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":61489,"solveTimeMs":498,"replayedSuccessfully":true,"pitFillEvents":[{"step":29,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":55200}}}},{"id":"pp-17","title":"镜像置换","order":17,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban 15转角置换，深层相位债务与狭缝让位中完成填坑归位","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","######@##","#    .* #","#   #   #","#####$# #","#####   #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":7,"y":5,"pos":52}}],"solutionLength":43,"expectedSteps":43,"audit":{"status":"SOLVED_REPLAYED","exact":false,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"PRIORITY_BEAM","exploredStates":148926,"solveTimeMs":2136,"replayedSuccessfully":true,"pitFillEvents":[{"step":43,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":109895}}}},{"id":"pp-18","title":"双子回环","order":18,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban 3宽回廊骨架，长纵深绕行中借柱调相规避死锁","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","###  ####","#     $ #","# #  #$ #","# . .#@ #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solutionLength":45,"expectedSteps":45,"audit":{"status":"SOLVED_REPLAYED","exact":false,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"PRIORITY_BEAM","exploredStates":175376,"solveTimeMs":2265,"replayedSuccessfully":true,"pitFillEvents":[{"step":43,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":170256}}}},{"id":"pp-19","title":"经典回廊","order":19,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"融合经典Microban 14高密回廊，深度调相与死锁陷阱中借柱完成归位","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","#     #","# # # #","#. $*@#","#   ###","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}}],"solutionLength":58,"expectedSteps":58,"audit":{"status":"SOLVED_REPLAYED","exact":false,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"PRIORITY_BEAM","exploredStates":132685,"solveTimeMs":2003,"replayedSuccessfully":true,"pitFillEvents":[{"step":58,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":89831}}}},{"id":"pp-20","title":"终极圣堂","order":20,"tier":4,"ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"终极圣堂：融合经典Microban 20双室互锁骨架，50+步宏大推运中达成完美归位","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","#     ###","#  @$$..#","#### ## #","###     #","###  ####","###  ####","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":10}}],"solutionLength":63,"expectedSteps":63,"audit":{"status":"SOLVED_REPLAYED","exact":false,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"PRIORITY_BEAM","exploredStates":303208,"solveTimeMs":3440,"replayedSuccessfully":true,"pitFillEvents":[{"step":63,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":285650}}}}]};
+    const DATA_SECONDARY = {"version":"1.0.0","generatedAt":"2026-09-28T02:09:35.007Z","chapter":6,"chapterTitle":"填坑立柱 (Pit-to-Pillar)","ruleVersion":"CG-PIT-PILLAR-1","description":"第6章填坑立柱100关大规模扩充题库。全部关卡经过引擎物理回放与反事实消融验证（noPitFill: UNSOLVABLE），证实机制为通关刚性必要条件。","count":100,"levels":[{"id":"pp-ext-001","title":"暗流破冰","order":1,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@     #","#  $ . #","#      #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":12,"expectedSteps":12,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4999,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":16828}}}},{"id":"pp-ext-002","title":"对偶停顿","order":2,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@     #","#  $ . #","#      #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":12,"expectedSteps":12,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4828,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":16828}}}},{"id":"pp-ext-003","title":"长廊回声","order":3,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3650,"replayedSuccessfully":true,"pitFillEvents":[{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":6276}}}},{"id":"pp-ext-004","title":"偏相穿针","order":4,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3638,"replayedSuccessfully":true,"pitFillEvents":[{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":6276}}}},{"id":"pp-ext-005","title":"隔空搭桥","order":5,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","# @   #","# $   #","##   ##","#  .  #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":12256,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":19140}}}},{"id":"pp-ext-006","title":"飞石闭环","order":6,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","# @   #","# $   #","##   ##","#  .  #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":10}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":15238,"replayedSuccessfully":true,"pitFillEvents":[{"step":15,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":19140}}}},{"id":"pp-ext-007","title":"双星重轨","order":7,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","#@      #","#  $  . #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":11}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8969,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":24276}}}},{"id":"pp-ext-008","title":"断桥复道","order":8,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","#@      #","#  $  . #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8678,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":24276}}}},{"id":"pp-ext-009","title":"借柱生门","order":9,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":3,"pos":30}}],"solutionLength":12,"expectedSteps":12,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":1427,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8938}}}},{"id":"pp-ext-010","title":"锁钥同脉","order":10,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@     #","#  $ # #","#   .  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":12,"expectedSteps":12,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4466,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":19927}}}},{"id":"pp-ext-011","title":"迂回引力","order":11,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@     #","#  $ # #","#   .  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":4,"y":1,"pos":12}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":6773,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":19927}}}},{"id":"pp-ext-012","title":"暗坑排空","order":12,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","#@  #   #","# $   . #","#   #   #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":11}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":12992,"replayedSuccessfully":true,"pitFillEvents":[{"step":15,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":20417}}}},{"id":"pp-ext-013","title":"狭径整饬","order":13,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#########","#@  #   #","# $   . #","#   #   #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":11377,"replayedSuccessfully":true,"pitFillEvents":[{"step":15,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":20417}}}},{"id":"pp-ext-014","title":"相位差分","order":14,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@   # #","#  $   #","#  .   #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":12,"expectedSteps":12,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4335,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":18154}}}},{"id":"pp-ext-015","title":"迟滞关口","order":15,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@   # #","#  $   #","#  .   #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":4,"y":1,"pos":12}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":5816,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":18154}}}},{"id":"pp-ext-016","title":"双重脉冲","order":16,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@  #  #","#  # $ #","# .    #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":20,"expectedSteps":20,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10006,"replayedSuccessfully":true,"pitFillEvents":[{"step":10,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10474}}}},{"id":"pp-ext-017","title":"回字迷宫","order":17,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"单坑扼守核心走廊，工程箱填坑开辟通往目标通道，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["########","#@  #  #","#  # $ #","# .    #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":20,"expectedSteps":20,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":9967,"replayedSuccessfully":true,"pitFillEvents":[{"step":10,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10474}}}},{"id":"pp-ext-018","title":"孤岛接驳","order":18,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ . #","#      #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4754,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":14205}}}},{"id":"pp-ext-019","title":"节律共鸣","order":19,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ . #","#      #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4970,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":14205}}}},{"id":"pp-ext-020","title":"分流引渡","order":20,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":2874,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":5245}}}},{"id":"pp-ext-021","title":"枢纽互锁","order":21,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":2964,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":5245}}}},{"id":"pp-ext-022","title":"逆旅借道","order":22,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["#######","# @   #","# $   #","##   ##","#  .  #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":1,"y":1,"pos":8}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":12035,"replayedSuccessfully":true,"pitFillEvents":[{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":17224}}}},{"id":"pp-ext-023","title":"悬崖勒马","order":23,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["#######","# @   #","# $   #","##   ##","#  .  #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":10}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":12366,"replayedSuccessfully":true,"pitFillEvents":[{"step":15,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":17224}}}},{"id":"pp-ext-024","title":"定点支点","order":24,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["#########","#@      #","#  $  . #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":11}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8286,"replayedSuccessfully":true,"pitFillEvents":[{"step":14,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":20500}}}},{"id":"pp-ext-025","title":"环廊调音","order":25,"tier":1,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["#########","#@      #","#  $  . #","#       #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8457,"replayedSuccessfully":true,"pitFillEvents":[{"step":14,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":20500}}}},{"id":"pp-ext-026","title":"折返破局","order":26,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solutionLength":12,"expectedSteps":12,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":583,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":7369}}}},{"id":"pp-ext-027","title":"空室停驻","order":27,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":4,"y":1,"pos":13}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":860,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":7369}}}},{"id":"pp-ext-028","title":"立柱封堵","order":28,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","#   .  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4209,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":15559}}}},{"id":"pp-ext-029","title":"两界悬索","order":29,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","#   .  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4387,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":15559}}}},{"id":"pp-ext-030","title":"同步锚点","order":30,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["#########","#@  #   #","# $   . #","#   #   #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":11}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10211,"replayedSuccessfully":true,"pitFillEvents":[{"step":14,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":18584}}}},{"id":"pp-ext-031","title":"时空交错","order":31,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["#########","#@  #   #","# $   . #","#   #   #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":9637,"replayedSuccessfully":true,"pitFillEvents":[{"step":14,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":18584}}}},{"id":"pp-ext-032","title":"错位齿轮","order":32,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@   # #","#  $   #","#  .   #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":12,"expectedSteps":12,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3270,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":14444}}}},{"id":"pp-ext-033","title":"工程前哨","order":33,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@   # #","#  $   #","#  .   #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":4,"y":1,"pos":12}}],"solutionLength":12,"expectedSteps":12,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":2899,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":14444}}}},{"id":"pp-ext-034","title":"对角引桥","order":34,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@  #  #","#  # $ #","# .    #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":23,"expectedSteps":23,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":12239,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8292}}}},{"id":"pp-ext-035","title":"微隙生光","order":35,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@  #  #","#  # $ #","# .    #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":23,"expectedSteps":23,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":12200,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8292}}}},{"id":"pp-ext-036","title":"隔岸观潮","order":36,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","## # # #","#  $.  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":2542,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":5734}}}},{"id":"pp-ext-037","title":"借石开路","order":37,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"宽体双走廊前哨仓，填坑后对界立柱改变调相节奏，对界回廊升起石柱提供关键停顿。","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","## # # #","#  $.  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":2502,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":5734}}}},{"id":"pp-ext-038","title":"暗室穿行","order":38,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"走廊拐角深坑阻断推箱，铺路后需迂回绕背，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","# # # #","# #   #","# $ . #","#######"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4308,"replayedSuccessfully":true,"pitFillEvents":[{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":9646}}}},{"id":"pp-ext-039","title":"回转枢纽","order":39,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"走廊拐角深坑阻断推箱，铺路后需迂回绕背，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","# # # #","# #   #","# $ . #","#######"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4289,"replayedSuccessfully":true,"pitFillEvents":[{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":9646}}}},{"id":"pp-ext-040","title":"定相法门","order":40,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"走廊拐角深坑阻断推箱，铺路后需迂回绕背，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","# # # #","# #   #","# $ . #","#######"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":11}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":2173,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":13661}}}},{"id":"pp-ext-041","title":"逆行穿梭","order":41,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"走廊拐角深坑阻断推箱，铺路后需迂回绕背，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","# # # #","# #   #","# $ . #","#######"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":2150,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":13661}}}},{"id":"pp-ext-042","title":"重力互锁","order":42,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"走廊拐角深坑阻断推箱，铺路后需迂回绕背，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","# # # #","# #   #","# $ . #","#######"],["########","#@  #  #","#  # $ #","# .    #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":22,"expectedSteps":22,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":18325,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":16911}}}},{"id":"pp-ext-043","title":"悬空步道","order":43,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"走廊拐角深坑阻断推箱，铺路后需迂回绕背，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","# # # #","# #   #","# $ . #","#######"],["########","#@  #  #","#  # $ #","# .    #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":22,"expectedSteps":22,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":18331,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":16911}}}},{"id":"pp-ext-044","title":"暗道机关","order":44,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"走廊拐角深坑阻断推箱，铺路后需迂回绕背，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","# # # #","# #   #","# $ . #","#######"],["########","#@     #","## # # #","#  $.  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3600,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10473}}}},{"id":"pp-ext-045","title":"双界归一","order":45,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"走廊拐角深坑阻断推箱，铺路后需迂回绕背，对界回廊升起石柱提供关键停顿。","boards":[["#######","#@ $ _#","# # # #","# #   #","# $ . #","#######"],["########","#@     #","## # # #","#  $.  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3554,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":10473}}}},{"id":"pp-ext-046","title":"千钧一发","order":46,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中岛阻隔单向坑道，填平后连通南北两室，对界回廊升起石柱提供关键停顿。","boards":[["########","#@  $ _#","##  #  #","#  $ . #","########"],["########","#@     #","#  $ . #","#      #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":6898,"replayedSuccessfully":true,"pitFillEvents":[{"step":6,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28820}}}},{"id":"pp-ext-047","title":"调相转盘","order":47,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中岛阻隔单向坑道，填平后连通南北两室，对界回廊升起石柱提供关键停顿。","boards":[["########","#@  $ _#","##  #  #","#  $ . #","########"],["########","#@     #","#  $ . #","#      #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":6799,"replayedSuccessfully":true,"pitFillEvents":[{"step":6,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28820}}}},{"id":"pp-ext-048","title":"步调共振","order":48,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中岛阻隔单向坑道，填平后连通南北两室，对界回廊升起石柱提供关键停顿。","boards":[["########","#@  $ _#","##  #  #","#  $ . #","########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":2,"y":1,"pos":10}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3967,"replayedSuccessfully":true,"pitFillEvents":[{"step":11,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8309}}}},{"id":"pp-ext-049","title":"迟来石柱","order":49,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中岛阻隔单向坑道，填平后连通南北两室，对界回廊升起石柱提供关键停顿。","boards":[["########","#@  $ _#","##  #  #","#  $ . #","########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4007,"replayedSuccessfully":true,"pitFillEvents":[{"step":11,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8309}}}},{"id":"pp-ext-050","title":"分毫不差","order":50,"tier":2,"family":"前哨借柱调相","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中岛阻隔单向坑道，填平后连通南北两室，对界回廊升起石柱提供关键停顿。","boards":[["########","#@  $ _#","##  #  #","#  $ . #","########"],["#######","# @   #","# $   #","##   ##","#  .  #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":1,"pos":8}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":14080,"replayedSuccessfully":true,"pitFillEvents":[{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28672}}}},{"id":"pp-ext-051","title":"立柱定音","order":51,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":2,"y":1,"pos":10}}],"solutionLength":20,"expectedSteps":20,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":18408,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]},{"step":14,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":2893}}}},{"id":"pp-ext-052","title":"虚实互生","order":52,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":4,"y":1,"pos":12}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8712,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]},{"step":10,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":5914}}}},{"id":"pp-ext-053","title":"引力弹弓","order":53,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":6,"y":1,"pos":14}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8528,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":2893}}}},{"id":"pp-ext-054","title":"双核联动","order":54,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":1,"y":2,"pos":17}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":9427,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":2893}}}},{"id":"pp-ext-055","title":"回廊沉沙","order":55,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"对偶工程仓：两侧均需工程箱填平阻断坑，石柱在对界产生相位突变","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","#@ $ _#","# #   #","# . $ #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":9}},{"id":"P2","pit":{"side":1,"x":5,"y":1,"pos":12},"pillar":{"side":0,"x":2,"y":1,"pos":9}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8031,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11701}}}},{"id":"pp-ext-056","title":"迷宫对峙","order":56,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"对偶工程仓：两侧均需工程箱填平阻断坑，石柱在对界产生相位突变","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","#@ $ _#","# #   #","# . $ #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":9}},{"id":"P2","pit":{"side":1,"x":5,"y":1,"pos":12},"pillar":{"side":0,"x":4,"y":1,"pos":11}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":11218,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":5,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11701}}}},{"id":"pp-ext-057","title":"暗影交接","order":57,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"对偶工程仓：两侧均需工程箱填平阻断坑，石柱在对界产生相位突变","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","#@ $ _#","# #   #","# . $ #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":9}},{"id":"P2","pit":{"side":1,"x":5,"y":1,"pos":12},"pillar":{"side":0,"x":1,"y":2,"pos":15}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10406,"replayedSuccessfully":true,"pitFillEvents":[{"step":11,"fills":[true,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11701}}}},{"id":"pp-ext-058","title":"单向闸口","order":58,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"对偶工程仓：两侧均需工程箱填平阻断坑，石柱在对界产生相位突变","boards":[["#######","#@ $ _#","#   # #","# $ . #","#######"],["#######","#@ $ _#","# #   #","# . $ #","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":2,"y":1,"pos":9}},{"id":"P2","pit":{"side":1,"x":5,"y":1,"pos":12},"pillar":{"side":0,"x":2,"y":2,"pos":16}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":7903,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11701}}}},{"id":"pp-ext-059","title":"时序齿轮","order":59,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双环外廊飞石：两界各自在外廊填坑铺轨，完成对角线互通","boards":[["#######","#@ $ _#","# ##  #","#  $. #","#######"],["#######","#  .$ #","#  ## #","#_ $ @#","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":22},"pillar":{"side":0,"x":2,"y":1,"pos":9}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4088,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":8,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":4075}}}},{"id":"pp-ext-060","title":"终局闭合","order":60,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双环外廊飞石：两界各自在外廊填坑铺轨，完成对角线互通","boards":[["#######","#@ $ _#","# ##  #","#  $. #","#######"],["#######","#  .$ #","#  ## #","#_ $ @#","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":22},"pillar":{"side":0,"x":4,"y":1,"pos":11}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":2955,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":6,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":4052}}}},{"id":"pp-ext-061","title":"星火渡河","order":61,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双环外廊飞石：两界各自在外廊填坑铺轨，完成对角线互通","boards":[["#######","#@ $ _#","# ##  #","#  $. #","#######"],["#######","#  .$ #","#  ## #","#_ $ @#","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":22},"pillar":{"side":0,"x":1,"y":2,"pos":15}}],"solutionLength":15,"expectedSteps":15,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3680,"replayedSuccessfully":true,"pitFillEvents":[{"step":9,"fills":[false,true]},{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":4052}}}},{"id":"pp-ext-062","title":"微澜暗度","order":62,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双环外廊飞石：两界各自在外廊填坑铺轨，完成对角线互通","boards":[["#######","#@ $ _#","# ##  #","#  $. #","#######"],["#######","#  .$ #","#  ## #","#_ $ @#","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":22},"pillar":{"side":0,"x":4,"y":2,"pos":18}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":3209,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":6,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":4052}}}},{"id":"pp-ext-063","title":"绝壁借力","order":63,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中心对称飞石：双界中心回转互换，石柱锁定退路","boards":[["########","#@  $ _#","# ## # #","#  $ . #","########"],["########","# . $  #","# # ## #","#_ $  @#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":1,"pos":9}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":25},"pillar":{"side":0,"x":2,"y":1,"pos":10}}],"solutionLength":19,"expectedSteps":19,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":14157,"replayedSuccessfully":true,"pitFillEvents":[{"step":9,"fills":[true,false]},{"step":16,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8866}}}},{"id":"pp-ext-064","title":"落子有声","order":64,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中心对称飞石：双界中心回转互换，石柱锁定退路","boards":[["########","#@  $ _#","# ## # #","#  $ . #","########"],["########","# . $  #","# # ## #","#_ $  @#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":1,"pos":9}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":25},"pillar":{"side":0,"x":3,"y":1,"pos":11}}],"solutionLength":19,"expectedSteps":19,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":14356,"replayedSuccessfully":true,"pitFillEvents":[{"step":9,"fills":[true,false]},{"step":16,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8866}}}},{"id":"pp-ext-065","title":"虚步生花","order":65,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中心对称飞石：双界中心回转互换，石柱锁定退路","boards":[["########","#@  $ _#","# ## # #","#  $ . #","########"],["########","# . $  #","# # ## #","#_ $  @#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":1,"pos":9}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":25},"pillar":{"side":0,"x":5,"y":1,"pos":13}}],"solutionLength":19,"expectedSteps":19,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":12661,"replayedSuccessfully":true,"pitFillEvents":[{"step":9,"fills":[true,false]},{"step":16,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8866}}}},{"id":"pp-ext-066","title":"重峰叠翠","order":66,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"中心对称飞石：双界中心回转互换，石柱锁定退路","boards":[["########","#@  $ _#","# ## # #","#  $ . #","########"],["########","# . $  #","# # ## #","#_ $  @#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":6,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":1,"pos":9}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":25},"pillar":{"side":0,"x":1,"y":2,"pos":17}}],"solutionLength":19,"expectedSteps":19,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":14359,"replayedSuccessfully":true,"pitFillEvents":[{"step":9,"fills":[true,false]},{"step":16,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8866}}}},{"id":"pp-ext-067","title":"移山填海","order":67,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"阶梯对偶飞石：两界上下阶梯各安一坑，互借落差通关","boards":[["#######","#@ $ _#","##    #","#  $. #","#######"],["#######","# .$  #","#    ##","#_ $ @#","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":22},"pillar":{"side":0,"x":2,"y":1,"pos":9}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":5814,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]},{"step":11,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":22829}}}},{"id":"pp-ext-068","title":"隔山打牛","order":68,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"阶梯对偶飞石：两界上下阶梯各安一坑，互借落差通关","boards":[["#######","#@ $ _#","##    #","#  $. #","#######"],["#######","# .$  #","#    ##","#_ $ @#","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":22},"pillar":{"side":0,"x":4,"y":1,"pos":11}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":5698,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]},{"step":11,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":22584}}}},{"id":"pp-ext-069","title":"分界回声","order":69,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"阶梯对偶飞石：两界上下阶梯各安一坑，互借落差通关","boards":[["#######","#@ $ _#","##    #","#  $. #","#######"],["#######","# .$  #","#    ##","#_ $ @#","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":22},"pillar":{"side":0,"x":2,"y":2,"pos":16}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8227,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]},{"step":8,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":22447}}}},{"id":"pp-ext-070","title":"天堑变通","order":70,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"阶梯对偶飞石：两界上下阶梯各安一坑，互借落差通关","boards":[["#######","#@ $ _#","##    #","#  $. #","#######"],["#######","# .$  #","#    ##","#_ $ @#","#######"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":12},"pillar":{"side":1,"x":1,"y":1,"pos":8}},{"id":"P2","pit":{"side":1,"x":1,"y":3,"pos":22},"pillar":{"side":0,"x":3,"y":2,"pos":17}}],"solutionLength":13,"expectedSteps":13,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":7378,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[false,true]},{"step":8,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":22447}}}},{"id":"pp-ext-071","title":"经纬错落","order":71,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":2,"y":2,"pos":18}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8860,"replayedSuccessfully":true,"pitFillEvents":[{"step":6,"fills":[false,true]},{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":2893}}}},{"id":"pp-ext-072","title":"反向牵引","order":72,"tier":3,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":6,"y":2,"pos":22}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8698,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":2893}}}},{"id":"pp-ext-073","title":"破土生林","order":73,"tier":3,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":3,"y":1,"pos":11}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10080,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-074","title":"石破天惊","order":74,"tier":3,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":4,"y":1,"pos":12}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8434,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-075","title":"乾坤定锚","order":75,"tier":3,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":4,"y":1,"pos":12}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":5,"y":1,"pos":13}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8405,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-076","title":"纵横捭阖","order":76,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":5,"y":1,"pos":13}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":6,"y":1,"pos":14}}],"solutionLength":21,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":18179,"replayedSuccessfully":true,"pitFillEvents":[{"step":10,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-077","title":"移形换影","order":77,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":6,"y":1,"pos":14}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":1,"y":2,"pos":17}}],"solutionLength":21,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":18395,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-078","title":"云开雾散","order":78,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":2,"pos":17}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":6,"y":2,"pos":22}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":9825,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-079","title":"暗夜微明","order":79,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":6,"y":2,"pos":22}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":1,"y":3,"pos":25}}],"solutionLength":21,"expectedSteps":21,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":18545,"replayedSuccessfully":true,"pitFillEvents":[{"step":12,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-080","title":"同频共振","order":80,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":1,"y":3,"pos":25}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":3,"y":3,"pos":27}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10057,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-081","title":"双子信使","order":81,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":3,"y":3,"pos":27}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":5,"y":3,"pos":29}}],"solutionLength":22,"expectedSteps":22,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":20477,"replayedSuccessfully":true,"pitFillEvents":[{"step":22,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28092}}}},{"id":"pp-ext-082","title":"穿石滴水","order":82,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":5,"y":3,"pos":29}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":6,"y":3,"pos":30}}],"solutionLength":23,"expectedSteps":23,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":22442,"replayedSuccessfully":true,"pitFillEvents":[{"step":20,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28152}}}},{"id":"pp-ext-083","title":"绝处逢生","order":83,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":2,"y":1,"pos":11}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":3,"y":1,"pos":12}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4648,"replayedSuccessfully":true,"pitFillEvents":[{"step":11,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":39182}}}},{"id":"pp-ext-084","title":"逆流借柱","order":84,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":3,"y":1,"pos":12}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":4,"y":1,"pos":13}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4639,"replayedSuccessfully":true,"pitFillEvents":[{"step":11,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":39182}}}},{"id":"pp-ext-085","title":"合纵连横","order":85,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["#########","#@      #","#  #### #","#   $.  #","#########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":4,"y":1,"pos":13}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":5,"y":1,"pos":14}}],"solutionLength":14,"expectedSteps":14,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":4757,"replayedSuccessfully":true,"pitFillEvents":[{"step":11,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":39182}}}},{"id":"pp-ext-086","title":"引线穿针","order":86,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":4,"y":1,"pos":12}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10080,"replayedSuccessfully":true,"pitFillEvents":[{"step":3,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-087","title":"暗度陈仓","order":87,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":5,"y":1,"pos":13}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8434,"replayedSuccessfully":true,"pitFillEvents":[{"step":4,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-088","title":"步步为营","order":88,"tier":4,"family":"双坑时序协同","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双坑并存，选择不同坑位将在对界引发截然不同的立柱封锁","boards":[["#########","#@ $ _  #","#    _  #","# $   . #","#########"],["########","#@     #","# #### #","# . $  #","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":14},"pillar":{"side":1,"x":4,"y":1,"pos":12}},{"id":"P2","pit":{"side":0,"x":5,"y":2,"pos":23},"pillar":{"side":1,"x":6,"y":1,"pos":14}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8405,"replayedSuccessfully":true,"pitFillEvents":[{"step":5,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":28032}}}},{"id":"pp-ext-089","title":"借力打力","order":89,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":1,"y":3,"pos":25}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":9174,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":2893}}}},{"id":"pp-ext-090","title":"回车转舵","order":90,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":3,"y":3,"pos":27}}],"solutionLength":20,"expectedSteps":20,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":17204,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]},{"step":14,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8616}}}},{"id":"pp-ext-091","title":"深谷幽兰","order":91,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":4,"y":3,"pos":28}}],"solutionLength":20,"expectedSteps":20,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":18578,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[true,false]},{"step":14,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":8738}}}},{"id":"pp-ext-092","title":"浮石生阶","order":92,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":2,"y":1,"pos":10}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":6,"y":3,"pos":30}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":8014,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":2905}}}},{"id":"pp-ext-093","title":"千回百转","order":93,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":2,"y":1,"pos":10}}],"solutionLength":18,"expectedSteps":18,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":15502,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]},{"step":12,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11666}}}},{"id":"pp-ext-094","title":"两界交响","order":94,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":4,"y":1,"pos":12}}],"solutionLength":17,"expectedSteps":17,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10468,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[true,false]},{"step":10,"fills":[false,true]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":12028}}}},{"id":"pp-ext-095","title":"天地合德","order":95,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":6,"y":1,"pos":14}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10003,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11666}}}},{"id":"pp-ext-096","title":"晨曦初照","order":96,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":1,"y":2,"pos":17}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10826,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11666}}}},{"id":"pp-ext-097","title":"玄关暗启","order":97,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":2,"y":2,"pos":18}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10197,"replayedSuccessfully":true,"pitFillEvents":[{"step":6,"fills":[false,true]},{"step":7,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11666}}}},{"id":"pp-ext-098","title":"星罗棋布","order":98,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":6,"y":2,"pos":22}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10151,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11666}}}},{"id":"pp-ext-099","title":"玉石俱成","order":99,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":1,"y":3,"pos":25}}],"solutionLength":16,"expectedSteps":16,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":10524,"replayedSuccessfully":true,"pitFillEvents":[{"step":8,"fills":[false,true]},{"step":9,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":11666}}}},{"id":"pp-ext-100","title":"通途自现","order":100,"tier":4,"family":"跨界对偶互锁","ruleVersion":"CG-PIT-PILLAR-1","mapping":"identity","designGoal":"双向因果互锁：A填坑为B立柱借力，B填坑为A立柱封堵","boards":[["########","#@ $ _ #","#  ### #","# $  . #","########"],["########","#@     #","#  $ # #","# $ _ .#","########"]],"pairs":[{"id":"P1","pit":{"side":0,"x":5,"y":1,"pos":13},"pillar":{"side":1,"x":3,"y":1,"pos":11}},{"id":"P2","pit":{"side":1,"x":4,"y":3,"pos":28},"pillar":{"side":0,"x":3,"y":3,"pos":27}}],"solutionLength":20,"expectedSteps":20,"audit":{"status":"SOLVED_REPLAYED","exact":true,"engine":"scripts/core/pit-pillar-engine.mjs","solver":"BFS_COMPACT","exploredStates":22252,"replayedSuccessfully":true,"pitFillEvents":[{"step":13,"fills":[false,true]},{"step":14,"fills":[true,false]}],"counterfactuals":{"noPitFill":{"status":"EXHAUSTED_UNSOLVABLE","exploredStates":14730}}}}]};
+    let currentPool = 'primary';
+    let DATA = DATA_PRIMARY;
+
     const DIRS = ['U', 'D', 'L', 'R'];
     const VECTORS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
     const normalize = w => [w[0], ...w.slice(1).sort((a, b) => a - b)];
 
-    const TIER_META = {
-      1: { name: 'Tier 1 · 入门基础', desc: '入门基础 (1–5)' },
-      2: { name: 'Tier 2 · 多坑协同', desc: '多坑协同 (6–10)' },
-      3: { name: 'Tier 3 · 防杀调相', desc: '防杀调相 (11–15)' },
-      4: { name: 'Tier 4 · 经典融合', desc: '经典融合 (16–20)' }
+    const TIER_META_PRIMARY = {
+      1: { name: 'Tier 1 · 入门基础', range: '1–5' },
+      2: { name: 'Tier 2 · 多坑协同', range: '6–10' },
+      3: { name: 'Tier 3 · 防杀调相', range: '11–15' },
+      4: { name: 'Tier 4 · 经典融合', range: '16–20' }
     };
+
+    const TIER_META_SECONDARY = {
+      1: { name: 'Tier 1 · 机制觉醒', range: '1–25' },
+      2: { name: 'Tier 2 · 借柱调相', range: '26–50' },
+      3: { name: 'Tier 3 · 跨界互锁', range: '51–75' },
+      4: { name: 'Tier 4 · 双坑协同', range: '76–100' }
+    };
+
+    function getTierMeta(tier) {
+      const pool = currentPool === 'primary' ? TIER_META_PRIMARY : TIER_META_SECONDARY;
+      return pool[tier] || { name: 'Tier ' + tier, range: '' };
+    }
 
     function compile(level) {
       const boards = level.boards.map((rows, side) => {
@@ -871,11 +938,15 @@
 
       // Update Header & Status Bar
       const tierBadge = document.getElementById('tierBadge');
-      tierBadge.textContent = TIER_META[lvl.tier]?.name || ('Tier ' + lvl.tier);
+      tierBadge.textContent = getTierMeta(lvl.tier).name;
       tierBadge.className = 'tier-tag tier-' + lvl.tier;
 
       document.getElementById('levelTitle').textContent = lvl.id.toUpperCase() + ': ' + lvl.title;
-      document.getElementById('levelDesc').textContent = lvl.designGoal;
+      const descEl = document.getElementById('levelDesc');
+      if (descEl) {
+        descEl.textContent = '';
+        descEl.style.display = 'none';
+      }
       document.getElementById('refSteps').textContent = lvl.solutionLength;
       document.getElementById('stepCount').textContent = '0';
       document.getElementById('replayStatus').textContent = '待命';
@@ -965,7 +1036,11 @@
                   cell.title = '对界立柱 ' + config.pairs[pillarPairIdx].id + ' (已升起，实体阻挡)';
                 } else {
                   cell.classList.add('pillar-target');
-                  cell.title = '对界立柱预定点 ' + config.pairs[pillarPairIdx].id;
+                  const lbl = document.createElement('span');
+                  lbl.className = 'pillar-target-label';
+                  lbl.textContent = config.pairs[pillarPairIdx].id;
+                  cell.appendChild(lbl);
+                  cell.title = '对界立柱预定点 ' + config.pairs[pillarPairIdx].id + ' (深渊填平后在此升起石柱)';
                 }
               }
 
@@ -1159,6 +1234,7 @@
 
     // Keyboard listeners
     window.addEventListener('keydown', e => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (['ArrowUp', 'KeyW'].includes(e.code)) { e.preventDefault(); doMove('U'); }
       else if (['ArrowDown', 'KeyS'].includes(e.code)) { e.preventDefault(); doMove('D'); }
       else if (['ArrowLeft', 'KeyA'].includes(e.code)) { e.preventDefault(); doMove('L'); }
@@ -1175,18 +1251,57 @@
       btn.onclick = () => setTierFilter(btn.dataset.tier, true);
     });
 
-    // Level Nav Buttons init
-    const nav = document.getElementById('levelNav');
-    DATA.levels.forEach((lvl, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'level-btn';
-      btn.dataset.tier = String(lvl.tier);
-      btn.dataset.idx = String(idx);
-      btn.title = lvl.id.toUpperCase() + ': ' + lvl.title + ' (' + lvl.solutionLength + '步)';
-      btn.innerHTML = '<span class="lvl-num">' + lvl.id.toUpperCase() + '</span><span class="lvl-title">' + lvl.title + '</span>';
-      btn.onclick = () => loadLevel(idx, true);
-      nav.appendChild(btn);
-    });
+    // Pool Switching & Level Buttons rendering
+    function updateTierTabs() {
+      const meta = currentPool === 'primary' ? TIER_META_PRIMARY : TIER_META_SECONDARY;
+      const count = DATA.levels.length;
+      document.querySelector('.tier-tab-btn[data-tier="all"]').textContent = '全部关卡 (1–' + count + ')';
+      document.querySelector('.tier-tab-btn[data-tier="1"]').textContent = meta[1].name + ' (' + meta[1].range + ')';
+      document.querySelector('.tier-tab-btn[data-tier="2"]').textContent = meta[2].name + ' (' + meta[2].range + ')';
+      document.querySelector('.tier-tab-btn[data-tier="3"]').textContent = meta[3].name + ' (' + meta[3].range + ')';
+      document.querySelector('.tier-tab-btn[data-tier="4"]').textContent = meta[4].name + ' (' + meta[4].range + ')';
+      document.getElementById('poolBadge').textContent = currentPool === 'primary' ? '机制试验 · 正选 20 关体系' : '机制试验 · 100 关海量扩展池';
+    }
+
+    function renderLevelButtons() {
+      const nav = document.getElementById('levelNav');
+      nav.innerHTML = '';
+      DATA.levels.forEach((lvl, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'level-btn';
+        btn.dataset.tier = String(lvl.tier);
+        btn.dataset.idx = String(idx);
+        const num = currentPool === 'primary' ? (idx + 1) : (lvl.id.replace(/^ch6-sec-0*/, '') || (idx + 1));
+        const label = currentPool === 'primary'
+          ? '6-' + num
+          : '6-E' + String(num).padStart(2, '0');
+        btn.dataset.displayLabel = label;
+        btn.dataset.levelId = lvl.id;
+        btn.textContent = label;
+        btn.title = lvl.id.toUpperCase() + ': ' + lvl.title + ' (' + lvl.solutionLength + '步)';
+        btn.setAttribute('aria-label', lvl.title);
+        btn.onclick = () => loadLevel(idx, true);
+        nav.appendChild(btn);
+      });
+      setTierFilter(currentTierFilter, false);
+    }
+
+    function switchPool(pool) {
+      if (currentPool === pool) return;
+      currentPool = pool;
+      DATA = pool === 'primary' ? DATA_PRIMARY : DATA_SECONDARY;
+      document.getElementById('btnPoolPrimary').classList.toggle('active', pool === 'primary');
+      document.getElementById('btnPoolSecondary').classList.toggle('active', pool === 'secondary');
+      updateTierTabs();
+      renderLevelButtons();
+      loadLevel(0, true);
+    }
+
+    document.getElementById('btnPoolPrimary').onclick = () => switchPool('primary');
+    document.getElementById('btnPoolSecondary').onclick = () => switchPool('secondary');
+
+    renderLevelButtons();
+    updateTierTabs();
 
     // Control buttons
     document.getElementById('btnUndo').onclick = undo;
